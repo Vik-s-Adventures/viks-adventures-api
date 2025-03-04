@@ -2,12 +2,18 @@ package com.upc.viksadventuresapi.profile.domain.model.aggregates;
 
 import com.upc.viksadventuresapi.profile.domain.model.commands.CreateProfileCommand;
 import com.upc.viksadventuresapi.profile.domain.model.valueobjects.*;
-import com.upc.viksadventuresapi.shared.model.aggregates.AuditableAbstractAggregateRoot;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
+import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
 public class Profile extends AuditableAbstractAggregateRoot<Profile> {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
+    private Long id;
+
     @Embedded
     private StudentName name;
 
