@@ -1,5 +1,6 @@
 package com.upc.viksadventuresapi.quiz.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateQuestionCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.ImageUrl;
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.Performance;
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.QuestionText;
@@ -14,7 +15,7 @@ public class Question extends AuditableAbstractAggregateRoot<Question> {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "quiz_id")
+    @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;
 
     @Embedded
@@ -26,45 +27,53 @@ public class Question extends AuditableAbstractAggregateRoot<Question> {
     @Embedded
     private ImageUrl imageUrl;
 
-    /*
-    * public class Quiz extends AuditableAbstractAggregateRoot<Quiz> {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    private Long id;
+    public Question() { }
 
-    @Embedded
-    private Title title;
-
-    @Embedded
-    private Description description;
-
-    public Quiz(String title, String description) {
-        this.title = new Title(title);
-        this.description = new Description(description);
+    public Question(Quiz quiz, Performance performance, QuestionText questionText, ImageUrl imageUrl) {
+        this();
+        this.quiz = quiz;
+        this.performance = performance;
+        this.questionText = questionText;
+        this.imageUrl = imageUrl;
+        validate();
     }
 
-    public Quiz(CreateQuizCommand command) {
+    public Question(Quiz quiz, CreateQuestionCommand command) {
         this(
-                command.title(),
-                command.description()
+                quiz,
+                new Performance(command.performance()),
+                new QuestionText(command.questionText()),
+                new ImageUrl(command.imageUrl())
         );
     }
 
-    public Quiz() {}
-
-    public void updateTitle(String title) {
-        this.title = new Title(title);
+    public Question updateDetails(Performance performance, QuestionText questionText, ImageUrl imageUrl) {
+        this.performance = performance;
+        this.questionText = questionText;
+        this.imageUrl = imageUrl;
+        validate();
+        return this;
     }
 
-    public void updateDescription(String description) {
-        this.description = new Description(description);
+    private void validate() {
+        if (this.performance == null || this.questionText == null) {
+            throw new IllegalArgumentException("Performance and QuestionText cannot be null");
+        }
     }
 
-    public String getTitle() {
-        return title.title();
+    public Long getQuizId() {
+        return quiz.getId();
     }
 
-    public String getDescription() {
-        return description.description();
-    }*/
+    public int getPerformance() {
+        return performance.value();
+    }
+
+    public String getQuestionText() {
+        return questionText.questionText();
+    }
+
+    public String getImageUrl() {
+        return imageUrl.imageUrl();
+    }
 }
