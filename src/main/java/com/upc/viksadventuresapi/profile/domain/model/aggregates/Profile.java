@@ -8,8 +8,6 @@ import lombok.Getter;
 
 @Entity
 public class Profile extends AuditableAbstractAggregateRoot<Profile> {
-
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
     private Long id;
