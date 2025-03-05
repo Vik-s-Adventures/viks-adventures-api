@@ -6,7 +6,6 @@ import com.upc.viksadventuresapi.quiz.domain.model.queries.GetQuestionByIdQuery;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetQuestionsByQuizIdQuery;
 import com.upc.viksadventuresapi.quiz.domain.services.QuestionQueryService;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.QuestionRepository;
-import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.QuizRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,4 +1,7 @@
 package com.upc.viksadventuresapi.quiz.domain.model.commands;
 
-public record CreateResponseCommand() {
+public record CreateResponseCommand(
+        Long optionId,
+        Long profileId
+) {
 }
