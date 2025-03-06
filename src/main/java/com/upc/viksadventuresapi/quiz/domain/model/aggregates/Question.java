@@ -48,9 +48,9 @@ public class Question extends AuditableAbstractAggregateRoot<Question> {
     }
 
     public Question updateDetails(Performance performance, QuestionText questionText, ImageUrl imageUrl) {
-        this.performance = performance;
-        this.questionText = questionText;
-        this.imageUrl = imageUrl;
+        if (performance != null) this.performance = performance;
+        if (questionText != null) this.questionText = questionText;
+        if (imageUrl != null) this.imageUrl = imageUrl;
         validate();
         return this;
     }
@@ -62,7 +62,7 @@ public class Question extends AuditableAbstractAggregateRoot<Question> {
     }
 
     public Long getQuizId() {
-        return quiz.getId();
+        return quiz != null ? quiz.getId() : null;
     }
 
     public int getPerformance() {

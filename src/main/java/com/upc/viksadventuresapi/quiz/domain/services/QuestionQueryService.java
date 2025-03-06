@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface QuestionQueryService {
     Optional<Question> handle(GetQuestionByIdQuery query);
     List<Question> handle(GetAllQuestionsQuery query);
-    List<Question> handle(GetQuestionsByQuizIdQuery query);
+    Optional<Question> handle(GetQuestionsByQuizIdQuery query);
 }

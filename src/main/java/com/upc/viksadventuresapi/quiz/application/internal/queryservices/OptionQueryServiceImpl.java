@@ -32,6 +32,6 @@ public class OptionQueryServiceImpl implements OptionQueryService {
     @Override
     public List<Option> handle(GetOptionsByQuestionIdQuery query) {
         Long questionId = query.questionId();
-        return optionRepository.findByQuestionId(questionId);
+        return optionRepository.findOptionsByQuestionId(questionId);
     }
 }

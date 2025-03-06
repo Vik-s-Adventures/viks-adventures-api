@@ -30,8 +30,9 @@ public class QuestionQueryServiceImpl implements QuestionQueryService {
     }
 
     @Override
-    public List<Question> handle(GetQuestionsByQuizIdQuery query) {
+    public Optional<Question> handle(GetQuestionsByQuizIdQuery query) {
         Long quizId = query.quizId();
-        return questionRepository.findByQuizId(quizId);
+        return questionRepository.findQuestionsByQuizId(quizId);
     }
+
 }

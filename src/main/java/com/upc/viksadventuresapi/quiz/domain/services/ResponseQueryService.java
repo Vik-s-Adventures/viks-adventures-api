@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface ResponseQueryService {
     Optional<Response> handle(GetResponseByIdQuery query);
-    List<Response> handle(GetResponsesByProfileIdQuery query);
+    Optional<Response> handle(GetResponsesByProfileIdQuery query);
     List<Response> handle(GetAllResponsesQuery query);
 }

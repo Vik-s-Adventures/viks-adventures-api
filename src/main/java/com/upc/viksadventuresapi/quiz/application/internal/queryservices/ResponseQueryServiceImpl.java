@@ -25,9 +25,9 @@ public class ResponseQueryServiceImpl implements ResponseQueryService {
     }
 
     @Override
-    public List<Response> handle(GetResponsesByProfileIdQuery query) {
+    public Optional<Response> handle(GetResponsesByProfileIdQuery query) {
         Long profileId = query.profileId();
-        return responseRepository.findByProfileId(profileId);
+        return responseRepository.findResponsesByProfileId(profileId);
     }
 
     @Override
