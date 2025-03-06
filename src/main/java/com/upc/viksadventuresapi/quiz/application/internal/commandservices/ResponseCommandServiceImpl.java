@@ -5,7 +5,6 @@ import com.upc.viksadventuresapi.profile.infrastructure.persistence.jpa.reposito
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Option;
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Response;
 import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateResponseCommand;
-import com.upc.viksadventuresapi.quiz.domain.model.commands.DeleteOptionByIdCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.commands.DeleteResponseByIdCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.events.ResponseCreatedEvent;
 import com.upc.viksadventuresapi.quiz.domain.services.ResponseCommandService;

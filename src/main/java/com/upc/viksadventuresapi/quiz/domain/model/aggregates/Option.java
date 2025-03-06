@@ -9,7 +9,6 @@ import lombok.Getter;
 
 @Entity
 public class Option extends AuditableAbstractAggregateRoot<Option> {
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
     private Long id;
