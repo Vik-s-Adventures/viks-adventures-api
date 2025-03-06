@@ -4,6 +4,7 @@ package com.upc.viksadventuresapi.quiz.interfaces.rest;
 import com.upc.viksadventuresapi.quiz.domain.model.commands.DeleteResponseByIdCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetAllResponsesQuery;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetResponseByIdQuery;
+import com.upc.viksadventuresapi.quiz.domain.model.queries.GetResponsesByProfileIdAndQuizIdQuery;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetResponsesByProfileIdQuery;
 import com.upc.viksadventuresapi.quiz.domain.services.ResponseCommandService;
 import com.upc.viksadventuresapi.quiz.domain.services.ResponseQueryService;
@@ -62,6 +63,14 @@ public class ResponseController {
     public ResponseEntity<List<ResponseResource>> getResponsesByProfile(@PathVariable Long profileId) {
         var getResponsesByProfileIdQuery = new GetResponsesByProfileIdQuery(profileId);
         var responses = responseQueryService.handle(getResponsesByProfileIdQuery);
+        var responseResources = responses.stream().map(ResponseResourceFromEntityAssembler::toResourceFromEntity).collect(Collectors.toList());
+        return ResponseEntity.ok(responseResources);
+    }
+
+    @GetMapping("/profile/{profileId}/quiz/{quizId}")
+    public ResponseEntity<List<ResponseResource>> getResponsesByProfileAndQuiz(@PathVariable Long profileId, @PathVariable Long quizId) {
+        var getResponsesByProfileIdAndQuizIdQuery = new GetResponsesByProfileIdAndQuizIdQuery(profileId, quizId);
+        var responses = responseQueryService.handle(getResponsesByProfileIdAndQuizIdQuery);
         var responseResources = responses.stream().map(ResponseResourceFromEntityAssembler::toResourceFromEntity).collect(Collectors.toList());
         return ResponseEntity.ok(responseResources);
     }

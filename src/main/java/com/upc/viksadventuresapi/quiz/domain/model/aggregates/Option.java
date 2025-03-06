@@ -3,11 +3,12 @@ package com.upc.viksadventuresapi.quiz.domain.model.aggregates;
 import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateOptionCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.IsCorrect;
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.OptionText;
+import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 @Entity
-public class Option {
+public class Option extends AuditableAbstractAggregateRoot<Option> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
@@ -51,6 +52,10 @@ public class Option {
         if (this.optionText == null || this.isCorrect == null) {
             throw new IllegalArgumentException("OptionText and IsCorrect cannot be null");
         }
+    }
+
+    public Long getQuizId() {
+        return question.getQuizId();
     }
 
     public Long getQuestionId() {
