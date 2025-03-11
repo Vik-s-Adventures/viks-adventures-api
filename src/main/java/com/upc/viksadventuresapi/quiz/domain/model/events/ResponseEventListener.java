@@ -6,8 +6,8 @@ import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateOrUpdateResult
 import com.upc.viksadventuresapi.quiz.domain.services.ResultCommandService;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResponseRepository;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResultRepository;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Optional;
 
@@ -24,37 +24,33 @@ public class ResponseEventListener {
         this.resultRepository = resultRepository;
     }
 
-    @EventListener
+    @TransactionalEventListener
     public void handleResponseCreated(ResponseCreatedEvent event) {
         Response response = event.getResponse();
         Long profileId = response.getProfileId();
         Long quizId = response.getQuizId();
 
-        // Obtener la cantidad de respuestas registradas por el estudiante en este quiz
+        // Contar respuestas previas
         long responseCount = responseRepository.countResponsesByProfileIdAndQuizId(profileId, quizId);
-
-        if (responseCount >= 10) {
+        if (responseCount > 10) { // Se verifica >10 porque ya se insertó una
             throw new IllegalStateException("El estudiante ya ha alcanzado el límite de 10 respuestas para este quiz.");
         }
 
         // Buscar si ya existe un Result registrado para este quiz y perfil
         Optional<Result> existingResult = resultRepository.findResultByProfileIdAndQuizId(profileId, quizId);
 
-        // Calcular el nuevo score
+        // Calcular el nuevo score (sin recalcular después)
         int newScore = getNewScore(existingResult, response);
 
-        // Llamar al servicio de aplicación para manejar la actualización/creación del Result
+        // Llamar al servicio para manejar la actualización/creación del Result
         CreateOrUpdateResultCommand command = new CreateOrUpdateResultCommand(profileId, quizId, newScore);
         resultCommandService.handle(command);
     }
 
     private static int getNewScore(Optional<Result> existingResult, Response response) {
-        // Si la respuesta es incorrecta, el score se mantiene igual
         if (!response.isOptionCorrect()) {
             return existingResult.map(Result::getScore).orElse(0);
         }
-
-        // Si existe un Result, aumentar el score, pero sin superar 10
         return existingResult.map(result -> Math.min(result.getScore() + 1, 10)).orElse(1);
     }
 }

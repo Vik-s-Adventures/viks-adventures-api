@@ -1,9 +1,7 @@
 package com.upc.viksadventuresapi.quiz.interfaces.rest;
 
 import com.upc.viksadventuresapi.quiz.domain.model.commands.DeleteOptionByIdCommand;
-import com.upc.viksadventuresapi.quiz.domain.model.queries.GetAllOptionsQuery;
-import com.upc.viksadventuresapi.quiz.domain.model.queries.GetOptionByIdQuery;
-import com.upc.viksadventuresapi.quiz.domain.model.queries.GetOptionsByQuestionIdQuery;
+import com.upc.viksadventuresapi.quiz.domain.model.queries.*;
 import com.upc.viksadventuresapi.quiz.domain.services.OptionCommandService;
 import com.upc.viksadventuresapi.quiz.domain.services.OptionQueryService;
 import com.upc.viksadventuresapi.quiz.interfaces.rest.resources.CreateOptionResource;
@@ -64,6 +62,23 @@ public class OptionController {
         var optionResources = options.stream().map(OptionResourceFromEntityAssembler::toResourceFromEntity).collect(Collectors.toList());
         return ResponseEntity.ok(optionResources);
     }
+
+    @GetMapping("correct/quiz/{quizId}")
+    public ResponseEntity<List<OptionResource>> getCorrectOptionsByQuiz(@PathVariable Long quizId) {
+        var getCorrectOptionsByCorrectAndQuizIdQuery = new GetOptionsByCorrectAndQuizIdQuery(quizId);
+        var options = optionQueryService.handle(getCorrectOptionsByCorrectAndQuizIdQuery); // Llama al query correcto
+        var optionResources = options.stream().map(OptionResourceFromEntityAssembler::toResourceFromEntity).collect(Collectors.toList());
+        return ResponseEntity.ok(optionResources);
+    }
+
+    @GetMapping("/quiz/{quizId}")
+    public ResponseEntity<List<OptionResource>> getOptionsByQuiz(@PathVariable Long quizId) {
+        var getOptionsByQuizIdQuery = new GetOptionsByQuizIdQuery(quizId);
+        var options = optionQueryService.handle(getOptionsByQuizIdQuery);
+        var optionResources = options.stream().map(OptionResourceFromEntityAssembler::toResourceFromEntity).collect(Collectors.toList());
+        return ResponseEntity.ok(optionResources);
+    }
+
 
     @DeleteMapping("/{optionId}")
     public ResponseEntity<Void> deleteOption(@PathVariable Long optionId) {

@@ -6,6 +6,7 @@ import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.Score;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 public class Result extends AuditableAbstractAggregateRoot<Result> {
@@ -21,6 +22,7 @@ public class Result extends AuditableAbstractAggregateRoot<Result> {
     @JoinColumn(name="quiz_id", nullable = false)
     private Quiz quiz;
 
+    @Setter
     @Embedded
     private Score score;
 
