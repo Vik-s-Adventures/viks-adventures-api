@@ -5,6 +5,6 @@ import com.upc.viksadventuresapi.profile.interfaces.rest.resources.CreateProfile
 
 public class CreateProfileCommandFromResourceAssembler {
     public static CreateProfileCommand toCommandFromResource(CreateProfileResource resource) {
-        return new CreateProfileCommand(resource.firstName(), resource.lastName(), resource.birthDate(), resource.sex(), resource.gradeLevel(), resource.school());
+        return new CreateProfileCommand(resource.userId(), resource.firstName(), resource.lastName(), resource.birthDate(), resource.sex(), resource.gradeLevel(), resource.school());
     }
 }

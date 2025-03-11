@@ -1,16 +1,24 @@
 package com.upc.viksadventuresapi.profile.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.iam.domain.model.aggregates.User;
 import com.upc.viksadventuresapi.profile.domain.model.commands.CreateProfileCommand;
 import com.upc.viksadventuresapi.profile.domain.model.valueobjects.*;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
     private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    @Getter
+    @Setter
+    private User user;
 
     @Embedded
     private StudentName name;
@@ -27,7 +35,8 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     @Embedded
     private School school;
 
-    public Profile(String firstName, String lastName, String birthDate, String sex, String gradeLevel, String school) {
+    public Profile(User user, String firstName, String lastName, String birthDate, String sex, String gradeLevel, String school) {
+        this.user = user;
         this.name = new StudentName(firstName, lastName);
         this.birthDate = new BirthDate(birthDate);
         this.sex = new Sex(sex);
@@ -35,8 +44,9 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
         this.school = new School(school);
     }
 
-    public Profile(CreateProfileCommand command) {
+    public Profile(User user, CreateProfileCommand command) {
         this(
+                user,
                 command.firstName(),
                 command.lastName(),
                 command.birthDate(),
@@ -66,6 +76,10 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
 
     public void updateSchool(String school) {
         this.school = new School(school);
+    }
+
+    public Long getUserId() {
+        return user.getId();
     }
 
     public String getFullName() {
