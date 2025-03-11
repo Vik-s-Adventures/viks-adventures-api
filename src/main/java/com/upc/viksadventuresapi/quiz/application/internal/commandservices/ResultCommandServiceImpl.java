@@ -12,7 +12,6 @@ import com.upc.viksadventuresapi.quiz.domain.model.queries.GetOptionsByCorrectAn
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.Score;
 import com.upc.viksadventuresapi.quiz.domain.services.OptionQueryService;
 import com.upc.viksadventuresapi.quiz.domain.services.ResultCommandService;
-import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.OptionRepository;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.QuizRepository;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResponseRepository;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResultRepository;
