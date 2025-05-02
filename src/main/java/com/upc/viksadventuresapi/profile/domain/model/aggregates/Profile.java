@@ -5,23 +5,21 @@ import com.upc.viksadventuresapi.profile.domain.model.commands.CreateProfileComm
 import com.upc.viksadventuresapi.profile.domain.model.valueobjects.*;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Data
+@Table(name = "profile")
 public class Profile extends AuditableAbstractAggregateRoot<Profile> {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    private Long id;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    @Getter
-    @Setter
-    private User user;
 
     @Embedded
-    private StudentName name;
+    private FullName fullName;
 
     @Embedded
     private BirthDate birthDate;
@@ -35,47 +33,17 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     @Embedded
     private School school;
 
-    public Profile(User user, String firstName, String lastName, String birthDate, String sex, String gradeLevel, String school) {
-        this.user = user;
-        this.name = new StudentName(firstName, lastName);
-        this.birthDate = new BirthDate(birthDate);
-        this.sex = new Sex(sex);
-        this.gradeLevel = new GradeLevel(gradeLevel);
-        this.school = new School(school);
-    }
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Profile(User user, CreateProfileCommand command) {
-        this(
-                user,
-                command.firstName(),
-                command.lastName(),
-                command.birthDate(),
-                command.sex(),
-                command.gradeLevel(),
-                command.school()
-        );
-    }
-
-    public Profile() {}
-
-    public void updateName(String firstName, String lastName) {
-        this.name = new StudentName(firstName, lastName);
-    }
-
-    public void updateBirthDate(String birthDate) {
-        this.birthDate = new BirthDate(birthDate);
-    }
-
-    public void updateSex(String sex) {
-        this.sex = new Sex(sex);
-    }
-
-    public void updateGradeLevel(String gradeLevel) {
-        this.gradeLevel = new GradeLevel(gradeLevel);
-    }
-
-    public void updateSchool(String school) {
-        this.school = new School(school);
+        this.user = user;
+        this.fullName = new FullName(command.firstName(), command.lastName());
+        this.birthDate = new BirthDate(LocalDate.parse(command.birthDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        this.sex = new Sex(command.sex());
+        this.gradeLevel = new GradeLevel(command.gradeLevel());
+        this.school = new School(command.school());
     }
 
     public Long getUserId() {
@@ -83,11 +51,12 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     }
 
     public String getFullName() {
-        return name.getFullName();
+        return fullName.getFullName();
     }
 
     public String getBirthDate() {
-        return birthDate.birthDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return birthDate.birthDate().format(formatter);
     }
 
     public String getSex() {

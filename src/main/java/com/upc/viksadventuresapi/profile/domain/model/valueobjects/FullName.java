@@ -3,10 +3,10 @@ package com.upc.viksadventuresapi.profile.domain.model.valueobjects;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public record StudentName(String firstName, String lastName) {
-    public StudentName() { this(null, null); }
+public record FullName(String firstName, String lastName) {
+    public FullName() { this(null, null); }
 
-    public StudentName {
+    public FullName {
         if (firstName == null || firstName.isBlank()) {
             throw new IllegalArgumentException("First name cannot be null or blank");
         }

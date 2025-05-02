@@ -4,8 +4,8 @@ public record CreateProfileCommand(
         Long userId,
         String firstName,
         String lastName,
-        String sex,
         String birthDate,
+        String sex,
         String gradeLevel,
         String school)
 { }
