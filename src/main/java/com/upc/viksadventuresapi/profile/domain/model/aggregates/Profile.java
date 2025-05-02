@@ -6,8 +6,6 @@ import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstrac
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.format.DateTimeFormatter;
-
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor

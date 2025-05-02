@@ -3,7 +3,6 @@ package com.upc.viksadventuresapi.quiz.domain.model.aggregates;
 import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
-import lombok.Getter;
 
 @Entity
 public class Response extends AuditableAbstractAggregateRoot<Response> {
