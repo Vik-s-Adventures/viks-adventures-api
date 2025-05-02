@@ -1,74 +1,85 @@
 package com.upc.viksadventuresapi.iam.interfaces.rest;
 
+import com.upc.viksadventuresapi.iam.domain.model.commands.LoginUserGoogleCommand;
 import com.upc.viksadventuresapi.iam.domain.services.UserCommandService;
-import com.upc.viksadventuresapi.iam.interfaces.rest.resources.AuthenticatedUserResource;
-import com.upc.viksadventuresapi.iam.interfaces.rest.resources.SignInResource;
-import com.upc.viksadventuresapi.iam.interfaces.rest.resources.SignUpResource;
+import com.upc.viksadventuresapi.iam.interfaces.rest.resources.AuthenticatedResponseResource;
+import com.upc.viksadventuresapi.iam.interfaces.rest.resources.LoginUserLocalResource;
+import com.upc.viksadventuresapi.iam.interfaces.rest.resources.RegisterUserLocalResource;
 import com.upc.viksadventuresapi.iam.interfaces.rest.resources.UserResource;
-import com.upc.viksadventuresapi.iam.interfaces.rest.transform.AuthenticatedUserResourceFromEntityAssembler;
-import com.upc.viksadventuresapi.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
-import com.upc.viksadventuresapi.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
+import com.upc.viksadventuresapi.iam.interfaces.rest.transform.AuthenticatedResponseResourceFromEntityAssembler;
+import com.upc.viksadventuresapi.iam.interfaces.rest.transform.LoginUserLocalCommandFromResourceAssembler;
+import com.upc.viksadventuresapi.iam.interfaces.rest.transform.RegisterUserLocalCommandFromResourceAssembler;
 import com.upc.viksadventuresapi.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * AuthenticationController
- * <p>
- *     This controller is responsible for handling authentication requests.
- *     It exposes two endpoints:
- *     <ul>
- *         <li>POST /api/v1/auth/sign-in</li>
- *         <li>POST /api/v1/auth/sign-up</li>
- *     </ul>
- * </p>
- */
+import java.io.IOException;
+
 @RestController
 @RequestMapping(value = "/api/v1/authentication", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Authentication", description = "Authentication Endpoints")
+@RequiredArgsConstructor
 public class AuthenticationController {
+
     private final UserCommandService userCommandService;
 
-    public AuthenticationController(UserCommandService userCommandService) {
-        this.userCommandService = userCommandService;
-    }
+    @PostMapping("/register")
+    public ResponseEntity<UserResource> registerLocal(@RequestBody RegisterUserLocalResource resource) {
+        var command = RegisterUserLocalCommandFromResourceAssembler.toCommandFromResource(resource);
+        var createdUser = userCommandService.handle(command);
 
-    /**
-     * Handles the sign-in request.
-     * @param signInResource the sign-in request body.
-     * @return the authenticated user resource.
-     */
-    @PostMapping("/sign-in")
-    public ResponseEntity<AuthenticatedUserResource> signIn(@RequestBody SignInResource signInResource) {
-        var signInCommand = SignInCommandFromResourceAssembler.toCommandFromResource(signInResource);
-        var authenticatedUser = userCommandService.handle(signInCommand);
-        if (authenticatedUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        var authenticatedUserResource = AuthenticatedUserResourceFromEntityAssembler.toResourceFromEntity(authenticatedUser.get().getLeft(), authenticatedUser.get().getRight());
-        return ResponseEntity.ok(authenticatedUserResource);
-    }
-
-    /**
-     * Handles the sign-up request.
-     * @param signUpResource the sign-up request body.
-     * @return the created user resource.
-     */
-    @PostMapping("/sign-up")
-    public ResponseEntity<UserResource> signUp(@RequestBody SignUpResource signUpResource) {
-        var signUpCommand = SignUpCommandFromResourceAssembler.toCommandFromResource(signUpResource);
-        var user = userCommandService.handle(signUpCommand);
-        if (user.isEmpty()) {
+        if (createdUser.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
-        return new ResponseEntity<>(userResource, HttpStatus.CREATED);
 
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(createdUser.get());
+        return new ResponseEntity<>(userResource, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login/local")
+    public ResponseEntity<AuthenticatedResponseResource> loginLocal(@RequestBody LoginUserLocalResource resource) {
+        var command = LoginUserLocalCommandFromResourceAssembler.toCommandFromResource(resource);
+        var authenticatedUser = userCommandService.handle(command);
+
+        if (authenticatedUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        var resourceResponse = AuthenticatedResponseResourceFromEntityAssembler
+                .toResourceFromEntity(authenticatedUser.get().getLeft(), authenticatedUser.get().getRight());
+
+        return ResponseEntity.ok(resourceResponse);
+    }
+
+    @GetMapping("/login/google")
+    public void redirectToGoogle(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth2/authorization/google");
+    }
+
+    @GetMapping("/google/success")
+    public ResponseEntity<AuthenticatedResponseResource> handleGoogleSuccess(OAuth2AuthenticationToken token) {
+        var command = new LoginUserGoogleCommand(token);
+        var authenticatedUser = userCommandService.handle(command);
+
+        if (authenticatedUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        var resource = AuthenticatedResponseResourceFromEntityAssembler
+                .toResourceFromEntity(authenticatedUser.get().getLeft(), authenticatedUser.get().getRight());
+
+        return ResponseEntity.ok(resource);
+    }
+
+    @GetMapping("/loginFailure")
+    public ResponseEntity<String> loginFailure() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("Error: Falló la autenticación con Google.");
     }
 }

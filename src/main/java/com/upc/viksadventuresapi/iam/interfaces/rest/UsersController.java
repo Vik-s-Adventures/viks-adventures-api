@@ -8,65 +8,46 @@ import com.upc.viksadventuresapi.iam.domain.services.UserQueryService;
 import com.upc.viksadventuresapi.iam.interfaces.rest.resources.UserResource;
 import com.upc.viksadventuresapi.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * This class is a REST controller that exposes the users resource.
- * It includes the following operations:
- * - GET /api/v1/users: returns all the users
- * - GET /api/v1/users/{userId}: returns the user with the given id
- **/
 @RestController
 @RequestMapping(value = "/api/v1/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Users", description = "User Management Endpoints")
+@RequiredArgsConstructor
 public class UsersController {
+
     private final UserQueryService userQueryService;
     private final UserCommandService userCommandService;
 
-    public UsersController(UserQueryService userQueryService, UserCommandService userCommandService) {
-        this.userQueryService = userQueryService;
-        this.userCommandService = userCommandService;
-    }
-
-    /**
-     * This method returns all the users.
-     * @return a list of user resources
-     * @see UserResource
-     */
     @GetMapping
     public ResponseEntity<List<UserResource>> getAllUsers() {
-        var getAllUsersQuery = new GetAllUsersQuery();
-        var users = userQueryService.handle(getAllUsersQuery);
-        var userResources = users.stream().map(UserResourceFromEntityAssembler::toResourceFromEntity).toList();
-        return ResponseEntity.ok(userResources);
+        var query = new GetAllUsersQuery();
+        var users = userQueryService.handle(query);
+        var resources = users.stream()
+                .map(UserResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
     }
 
-    /**
-     * This method returns the user with the given id.
-     * @param userId the user id
-     * @return the user resource with the given id
-     * @throws RuntimeException if the user is not found
-     * @see UserResource
-     */
-    @GetMapping(value = "/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserResource> getUserById(@PathVariable Long userId) {
-        var getUserByIdQuery = new GetUserByIdQuery(userId);
-        var user = userQueryService.handle(getUserByIdQuery);
-        if (user.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
-        return ResponseEntity.ok(userResource);
+        var query = new GetUserByIdQuery(userId);
+        var user = userQueryService.handle(query);
+
+        return user.map(value ->
+                        ResponseEntity.ok(UserResourceFromEntityAssembler.toResourceFromEntity(value)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping(value = "/{userId}")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
-        var deleteUserByIdCommand = new DeleteUserByIdCommand(userId);
-        userCommandService.handle(deleteUserByIdCommand);
+        var command = new DeleteUserByIdCommand(userId);
+        userCommandService.handle(command);
         return ResponseEntity.noContent().build();
     }
 }

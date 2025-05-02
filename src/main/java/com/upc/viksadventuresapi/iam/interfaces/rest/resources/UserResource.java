@@ -1,6 +1,6 @@
 package com.upc.viksadventuresapi.iam.interfaces.rest.resources;
 
-import java.util.List;
+import com.upc.viksadventuresapi.iam.domain.model.enums.AuthProvider;
 
-public record UserResource(Long id, String username, List<String> roles) {
+public record UserResource(Long id, String name, String email, AuthProvider authProvider) {
 }

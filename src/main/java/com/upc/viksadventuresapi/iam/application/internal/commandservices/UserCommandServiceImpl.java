@@ -1,96 +1,104 @@
 package com.upc.viksadventuresapi.iam.application.internal.commandservices;
 
-import com.upc.viksadventuresapi.iam.application.internal.outboundservices.hashing.HashingService;
-import com.upc.viksadventuresapi.iam.application.internal.outboundservices.tokens.TokenService;
 import com.upc.viksadventuresapi.iam.domain.model.aggregates.User;
 import com.upc.viksadventuresapi.iam.domain.model.commands.DeleteUserByIdCommand;
-import com.upc.viksadventuresapi.iam.domain.model.commands.SignInCommand;
-import com.upc.viksadventuresapi.iam.domain.model.commands.SignUpCommand;
+import com.upc.viksadventuresapi.iam.domain.model.commands.LoginUserGoogleCommand;
+import com.upc.viksadventuresapi.iam.domain.model.commands.LoginUserLocalCommand;
+import com.upc.viksadventuresapi.iam.domain.model.commands.RegisterUserLocalCommand;
+import com.upc.viksadventuresapi.iam.domain.model.enums.AuthProvider;
 import com.upc.viksadventuresapi.iam.domain.services.UserCommandService;
-import com.upc.viksadventuresapi.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
+import com.upc.viksadventuresapi.iam.infrastructure.authorization.configuration.JwtService;
 import com.upc.viksadventuresapi.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * User command service implementation
- * <p>
- *     This class implements the {@link UserCommandService} interface and provides the implementation for the
- *     {@link SignInCommand} and {@link SignUpCommand} commands.
- * </p>
- */
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserCommandServiceImpl implements UserCommandService {
-
     private final UserRepository userRepository;
-    private final HashingService hashingService;
-    private final TokenService tokenService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    private final RoleRepository roleRepository;
-
-    public UserCommandServiceImpl(UserRepository userRepository, HashingService hashingService, TokenService tokenService, RoleRepository roleRepository) {
-        this.userRepository = userRepository;
-        this.hashingService = hashingService;
-        this.tokenService = tokenService;
-        this.roleRepository = roleRepository;
+    @Override
+    public Optional<User> handle(RegisterUserLocalCommand command) {
+        // Verificar si ya existe el email
+        if (userRepository.findByEmail(command.email()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+        // Crear el usuario
+        User user = new User();
+        user.setName(command.name());
+        user.setEmail(command.email());
+        user.setPassword(passwordEncoder.encode(command.password()));
+        user.setAuthProvider(AuthProvider.LOCAL);
+        // Guardar el usuario
+        return Optional.of(userRepository.save(user));
     }
 
-    /**
-     * Handle the sign-in command
-     * <p>
-     *     This method handles the {@link SignInCommand} command and returns the user and the token.
-     * </p>
-     * @param command the sign-in command containing the username and password
-     * @return and optional containing the user matching the username and the generated token
-     * @throws RuntimeException if the user is not found or the password is invalid
-     */
     @Override
-    public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
-        var user = userRepository.findByUsername(command.username());
-        if (user.isEmpty())
+    public Optional<ImmutablePair<User, String>> handle(LoginUserLocalCommand command) {
+        User existingUser;
+
+        if (command.identifier().contains("@")) {
+            existingUser = userRepository.findByEmail(command.identifier()).orElse(null);
+        } else {
+            existingUser = userRepository.findByName(command.identifier()).orElse(null);
+        }
+
+        if (existingUser == null) {
             throw new RuntimeException("User not found");
-        if (!hashingService.matches(command.password(), user.get().getPassword()))
-            throw new RuntimeException("Invalid password");
-        var token = tokenService.generateToken(user.get().getUsername());
-        return Optional.of(ImmutablePair.of(user.get(), token));
+        }
+
+        if (!passwordEncoder.matches(command.password(), existingUser.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String token = jwtService.generateToken(existingUser);
+        return Optional.of(ImmutablePair.of(existingUser, token));
     }
 
-    /**
-     * Handle the sign-up command
-     * <p>
-     *     This method handles the {@link SignUpCommand} command and returns the user.
-     * </p>
-     * @param command the sign-up command containing the username and password
-     * @return the created user
-     */
     @Override
-    public Optional<User> handle(SignUpCommand command) {
-        if (userRepository.existsByUsername(command.username()))
-            throw new RuntimeException("Username already exists");
-        var roles = command.roles().stream().map(role -> roleRepository.findByName(role.getName()).orElseThrow(() -> new RuntimeException("Role name not found"))).toList();
-        var user = new User(command.username(), hashingService.encode(command.password()), roles);
-        userRepository.save(user);
-        return userRepository.findByUsername(command.username());
+    public Optional<ImmutablePair<User, String>> handle(LoginUserGoogleCommand command) {
+        OAuth2AuthenticationToken oauthToken = command.token();
+        String email = oauthToken.getPrincipal().getAttribute("email");
+        String name = oauthToken.getPrincipal().getAttribute("name");
+
+        // Buscar si ya existe un usuario con ese email
+        Optional<User> existingUserOpt = userRepository.findByEmail(email);
+
+        User user;
+        if (existingUserOpt.isPresent()) {
+            user = existingUserOpt.get();
+        } else {
+            // Si no existe, registrar un nuevo usuario
+            user = new User();
+            user.setName(name);
+            user.setEmail(email);
+            user.setPassword(null);
+            user.setAuthProvider(AuthProvider.GOOGLE);
+            user = userRepository.save(user);
+        }
+
+        String jwtToken = jwtService.generateToken(user);
+        return Optional.of(ImmutablePair.of(user, jwtToken));
     }
-    /**
-     * Handle the delete user command
-     * <p>
-     *     This method handles the {@link DeleteUserByIdCommand} command and deletes the user.
-     * </p>
-     * @param command the delete user command containing the user id
-     * @throws IllegalArgumentException if the user does not exist or an error occurs while deleting the user
-     */
+
     @Override
     public void handle(DeleteUserByIdCommand command) {
-        if (!userRepository.existsById(command.userId())) {
-            throw new IllegalArgumentException("User does not exist");
-        }
+        // Verificar si el usuario existe
+        User user = userRepository.findById(command.userId()).orElseThrow(() -> new RuntimeException("User not found"));
+        // Eliminar el usuario
         try {
-            userRepository.deleteById(command.userId());
+            userRepository.delete(user);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while deleting user: " + e.getMessage());
+            throw new IllegalArgumentException("Error deleting user: " + e.getMessage());
         }
     }
 }
