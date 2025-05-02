@@ -19,6 +19,8 @@ public class LearningPathCommandServiceImpl implements LearningPathCommandServic
 
     private final ResponseRepository responseRepository;
     private final ApplicationEventPublisher eventPublisher;
+    // Model URL
+    private static final String MODEL_URL = "https://viksmodelapi-production.up.railway.app/predecir_ruta";
 
     @Autowired
     public LearningPathCommandServiceImpl(ResponseRepository responseRepository,
@@ -62,10 +64,10 @@ public class LearningPathCommandServiceImpl implements LearningPathCommandServic
         requestBody.put("id_estudiante", profileId);
         requestBody.put("preguntas", answerScores);
 
-        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(
-                "http://127.0.0.1:8000/predecir_ruta", requestBody, (Class<Map<String, Object>>) (Class<?>) Map.class);
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(MODEL_URL, requestBody, (Class<Map<String, Object>>) (Class<?>) Map.class);
 
         Map<String, Object> responseBody = responseEntity.getBody();
+
         if (responseBody != null && responseBody.containsKey("ruta")) {
             try {
                 return (List<Integer>) responseBody.get("ruta");
