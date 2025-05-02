@@ -62,20 +62,6 @@ public class AuthenticationController {
         response.sendRedirect("/oauth2/authorization/google");
     }
 
-    @GetMapping("/google/success")
-    public ResponseEntity<AuthenticatedResponseResource> handleGoogleSuccess(OAuth2AuthenticationToken token) {
-        var command = new LoginUserGoogleCommand(token);
-        var authenticatedUser = userCommandService.handle(command);
-
-        if (authenticatedUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        var resource = AuthenticatedResponseResourceFromEntityAssembler
-                .toResourceFromEntity(authenticatedUser.get().getLeft(), authenticatedUser.get().getRight());
-
-        return ResponseEntity.ok(resource);
-    }
 
     @GetMapping("/loginFailure")
     public ResponseEntity<String> loginFailure() {

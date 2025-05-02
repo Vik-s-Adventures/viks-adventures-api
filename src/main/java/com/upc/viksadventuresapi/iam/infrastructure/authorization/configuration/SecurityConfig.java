@@ -8,6 +8,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,8 +34,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
-                        ).permitAll() // Permitir acceso a estas rutas sin autenticación
-                        .anyRequest().authenticated() // Requiere autenticación en todas las demás rutas
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -41,9 +43,12 @@ public class SecurityConfig {
                             response.getWriter().write("No autorizado: token JWT faltante o inválido");
                         })
                 )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // ✅ ESTE FALTABA
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/api/v1/authentication/login/google")
-                        .defaultSuccessUrl("/api/v1/authentication/google/success", true)
+                        .successHandler(oAuth2SuccessHandler)
                         .failureUrl("/loginFailure")
                 )
                 .logout(logout -> logout
@@ -58,11 +63,11 @@ public class SecurityConfig {
                         .permitAll()
                 );
 
-        // Agregar el filtro JWT aquí
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
