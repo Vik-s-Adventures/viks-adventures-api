@@ -40,13 +40,6 @@ public class Option extends AuditableAbstractAggregateRoot<Option> {
         );
     }
 
-    public Option updateDetails(OptionText optionText, IsCorrect isCorrect) {
-        this.optionText = optionText;
-        this.isCorrect = isCorrect;
-        validate();
-        return this;
-    }
-
     private void validate() {
         if (this.optionText == null || this.isCorrect == null) {
             throw new IllegalArgumentException("OptionText and IsCorrect cannot be null");

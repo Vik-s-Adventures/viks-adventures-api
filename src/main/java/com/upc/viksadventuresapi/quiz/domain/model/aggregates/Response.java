@@ -40,6 +40,6 @@ public class Response extends AuditableAbstractAggregateRoot<Response> {
     }
 
     public Long getQuizId(){
-        return option.getQuestionId();
+        return option.getQuizId();
     }
 }

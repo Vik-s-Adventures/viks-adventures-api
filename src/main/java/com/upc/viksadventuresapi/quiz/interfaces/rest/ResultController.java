@@ -1,6 +1,7 @@
 package com.upc.viksadventuresapi.quiz.interfaces.rest;
 
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Result;
+import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateResultCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.commands.DeleteResultByIdCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetAllResultsQuery;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetResultByIdQuery;
@@ -52,6 +53,7 @@ public class ResultController {
     @GetMapping("/profile/{profileId}")
     public ResponseEntity<List<ResultResource>> getResultsByProfile(@PathVariable Long profileId) {
         Optional<Result> result = resultQueryService.handle(new GetResultsByProfileIdQuery(profileId));
+
         return result.map(value -> ResponseEntity.ok(List.of(ResultResourceFromEntityAssembler.toResourceFromEntity(value))))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -60,6 +62,13 @@ public class ResultController {
     @GetMapping("/profile/{profileId}/quiz/{quizId}")
     public ResponseEntity<ResultResource> getResultByProfileAndQuiz(@PathVariable Long profileId, @PathVariable Long quizId) {
         Optional<Result> result = resultQueryService.handle(new GetResultByProfileIdAndQuizIdQuery(profileId, quizId));
+
+        if (result.isEmpty()) {
+            // Si no existe el result, creamos uno
+            resultCommandService.handle(new CreateResultCommand(profileId, quizId));
+            result = resultQueryService.handle(new GetResultByProfileIdAndQuizIdQuery(profileId, quizId));
+        }
+
         return result.map(value -> ResponseEntity.ok(ResultResourceFromEntityAssembler.toResourceFromEntity(value)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

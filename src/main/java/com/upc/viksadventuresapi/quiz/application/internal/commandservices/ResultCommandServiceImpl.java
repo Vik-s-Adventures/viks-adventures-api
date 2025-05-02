@@ -1,13 +1,12 @@
 package com.upc.viksadventuresapi.quiz.application.internal.commandservices;
 
-import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;
 import com.upc.viksadventuresapi.profile.infrastructure.persistence.jpa.repositories.ProfileRepository;
-import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Quiz;
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Response;
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Option;
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Result;
-import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateOrUpdateResultCommand;
+import com.upc.viksadventuresapi.quiz.domain.model.commands.CreateResultCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.commands.DeleteResultByIdCommand;
+import com.upc.viksadventuresapi.quiz.domain.model.commands.UpdateResultCommand;
 import com.upc.viksadventuresapi.quiz.domain.model.queries.GetOptionsByCorrectAndQuizIdQuery;
 import com.upc.viksadventuresapi.quiz.domain.model.valueobjects.Score;
 import com.upc.viksadventuresapi.quiz.domain.services.OptionQueryService;
@@ -19,10 +18,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
 @Service
 public class ResultCommandServiceImpl implements ResultCommandService {
-    private final ResultRepository  resultRepository;
+    private final ResultRepository resultRepository;
     private final QuizRepository quizRepository;
     private final ProfileRepository profileRepository;
     private final ResponseRepository responseRepository;
@@ -37,54 +35,40 @@ public class ResultCommandServiceImpl implements ResultCommandService {
     }
 
     @Override
-    public Optional<Result> handle(CreateOrUpdateResultCommand command) {
+    public Optional<Result> handle(CreateResultCommand command) {
         Long profileId = command.profileId();
         Long quizId = command.quizId();
 
-        Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() -> new IllegalArgumentException("Quiz with ID " + quizId + " not found."));
-        Profile profile = profileRepository.findById(profileId)
-                .orElseThrow(() -> new IllegalArgumentException("Profile with ID " + profileId + " not found."));
+        // Crear un nuevo Result
+        int points = calculateScore(profileId, quizId);
 
-        // Obtener todas las respuestas del estudiante en ese quiz
-        List<Response> responses = responseRepository.findResponsesByProfileIdAndQuizId(profileId, quizId);
+        // Crear y guardar el resultado
+        Result result = new Result(profileRepository.findById(profileId).orElseThrow(() -> new IllegalArgumentException("Profile not found")),
+                quizRepository.findById(quizId).orElseThrow(() -> new IllegalArgumentException("Quiz not found")),
+                new Score(points));
 
-        System.out.println("=== RESPUESTAS DEL ESTUDIANTE ===");
-        for (Response response : responses) {
-            System.out.println("Response ID: " + response.getId() +
-                    " | Option ID: " + response.getOptionId() +
-                    " | Correcta: " + response.isOptionCorrect());
-        }
+        resultRepository.save(result);
+        return Optional.of(result);
+    }
 
-        // Obtener las opciones correctas del quiz
-        List<Option> correctOptions = optionQueryService.handle(new GetOptionsByCorrectAndQuizIdQuery(quizId));
+    @Override
+    public Optional<Result> handle(UpdateResultCommand command) {
+        Long profileId = command.profileId();
+        Long quizId = command.quizId();
 
-        System.out.println("\n=== OPCIONES CORRECTAS DEL QUIZ ===");
-        for (Option option : correctOptions) {
-            System.out.println("Option ID: " + option.getId() +
-                    " | Pregunta ID: " + option.getQuestionId() +
-                    " | Texto: " + option.getOptionText());
-        }
-
-        // Contar cuántas respuestas del estudiante son correctas
-        int correctAnswersCount = (int) responses.stream()
-                .map(Response::getOptionId) // Obtener el ID de la opción de la respuesta
-                .filter(responseOptionId -> correctOptions.stream()
-                        .map(Option::getId)
-                        .anyMatch(responseOptionId::equals)) // Comparar IDs
-                .count();
-
-        // Verificar si el Result ya existe
+        // Verificar que el Result realmente existe en la base de datos
         Optional<Result> existingResult = resultRepository.findResultByProfileIdAndQuizId(profileId, quizId);
-
-        Result result;
-        if (existingResult.isPresent()) {
-            result = existingResult.get();
-            result.setScore(new Score(Math.min(correctAnswersCount, 10))); // Asegurar que el score no supere 10
-        } else {
-            result = new Result(profile, quiz, new Score(Math.min(correctAnswersCount, 10)));
+        if (existingResult.isEmpty()) {
+            // Añadir log para verificar si el ID existe
+            System.out.println("No se encontró el Result con profileId: " + profileId + " y quizId: " + quizId);
+            throw new IllegalArgumentException("Result does not exist to update.");
         }
 
+        // Continuar con la lógica de actualización si el Result existe
+        Result result = existingResult.get();
+        int newScore = calculateScore(profileId, quizId);
+
+        result.setScore(new Score(newScore));
         resultRepository.save(result);
         return Optional.of(result);
     }
@@ -99,5 +83,25 @@ public class ResultCommandServiceImpl implements ResultCommandService {
         } catch (Exception e) {
             throw new RuntimeException("Error deleting result with ID " + command.resultId());
         }
+    }
+
+    //  Calcular el puntaje total del estudiante
+    private int calculateScore(Long profileId, Long quizId) {
+        // Obtener todas las respuestas del estudiante
+        List<Response> responses = responseRepository.findResponsesByProfileIdAndQuizId(profileId, quizId);
+
+        // Obtener las opciones correctas del quiz
+        List<Option> correctOptions = optionQueryService.handle(new GetOptionsByCorrectAndQuizIdQuery(quizId));
+
+        // Contar cuántas respuestas del estudiante son correctas
+        int correctAnswersCount = (int) responses.stream()
+                .map(Response::getOptionId)
+                .filter(responseOptionId -> correctOptions.stream()
+                        .map(Option::getId)
+                        .anyMatch(responseOptionId::equals))
+                .count();
+
+        // Calcular el puntaje total (máximo 100)
+        return Math.min(correctAnswersCount * 10, 100);
     }
 }

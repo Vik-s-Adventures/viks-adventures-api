@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class ResponseCreatedEvent extends ApplicationEvent {
-
     private final Response response;
 
     public ResponseCreatedEvent(Object source, Response response) {

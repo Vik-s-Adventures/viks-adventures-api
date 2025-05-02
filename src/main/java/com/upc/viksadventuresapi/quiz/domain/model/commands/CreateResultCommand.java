@@ -1,7 +1,7 @@
 package com.upc.viksadventuresapi.quiz.domain.model.commands;
 
-public record CreateOrUpdateResultCommand(
-        Long quizId,
+public record CreateResultCommand(
         Long profileId,
-        int score
-) {}
+        Long quizId
+) {
+}
