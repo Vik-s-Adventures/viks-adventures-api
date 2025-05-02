@@ -46,10 +46,6 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
         this.school = new School(command.school());
     }
 
-    public Long getUserId() {
-        return user.getId();
-    }
-
     public String getFullName() {
         return fullName.getFullName();
     }

@@ -5,6 +5,14 @@ import com.upc.viksadventuresapi.profile.interfaces.rest.resources.ProfileResour
 
 public class ProfileResourceFromEntityAssembler {
     public static ProfileResource toResourceFromEntity(Profile entity) {
-        return new ProfileResource(entity.getId(), entity.getUserId(), entity.getFullName(), entity.getBirthDate(), entity.getSex(), entity.getGradeLevel(), entity.getSchool());
+        return new ProfileResource(
+                entity.getId(),
+                entity.getUser().getId(),
+                entity.getFullName(),
+                entity.getBirthDate(),
+                entity.getSex(),
+                entity.getGradeLevel(),
+                entity.getSchool()
+        );
     }
 }
