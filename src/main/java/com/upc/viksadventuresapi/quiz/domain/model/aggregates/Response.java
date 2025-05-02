@@ -7,11 +7,6 @@ import lombok.Getter;
 
 @Entity
 public class Response extends AuditableAbstractAggregateRoot<Response> {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
-    private Long id;
-
     @ManyToOne
     @JoinColumn(name = "option_id", nullable = false)
     private Option option;
