@@ -9,6 +9,8 @@ import com.upc.viksadventuresapi.iam.domain.model.enums.AuthProvider;
 import com.upc.viksadventuresapi.iam.domain.services.UserCommandService;
 import com.upc.viksadventuresapi.iam.infrastructure.authorization.configuration.JwtService;
 import com.upc.viksadventuresapi.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import com.upc.viksadventuresapi.profile.domain.model.commands.CreateProfileCommand;
+import com.upc.viksadventuresapi.profile.domain.services.ProfileCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -24,6 +26,7 @@ import java.util.Optional;
 public class UserCommandServiceImpl implements UserCommandService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileCommandService profileCommandService;
     private final JwtService jwtService;
 
     @Override
@@ -38,8 +41,15 @@ public class UserCommandServiceImpl implements UserCommandService {
         user.setEmail(command.email());
         user.setPassword(passwordEncoder.encode(command.password()));
         user.setAuthProvider(AuthProvider.LOCAL);
+
         // Guardar el usuario
-        return Optional.of(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+
+        // Crear el perfil
+        CreateProfileCommand createProfileCommand = new CreateProfileCommand(savedUser.getId());
+        profileCommandService.handle(createProfileCommand);
+
+        return Optional.of(savedUser);
     }
 
     @Override
@@ -84,6 +94,9 @@ public class UserCommandServiceImpl implements UserCommandService {
             user.setPassword(null);
             user.setAuthProvider(AuthProvider.GOOGLE);
             user = userRepository.save(user);
+
+            CreateProfileCommand profileCommand = new CreateProfileCommand(user.getId());
+            profileCommandService.handle(profileCommand);
         }
 
         String jwtToken = jwtService.generateToken(user);

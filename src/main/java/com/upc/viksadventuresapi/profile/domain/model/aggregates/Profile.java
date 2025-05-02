@@ -1,13 +1,11 @@
 package com.upc.viksadventuresapi.profile.domain.model.aggregates;
 
 import com.upc.viksadventuresapi.iam.domain.model.aggregates.User;
-import com.upc.viksadventuresapi.profile.domain.model.commands.CreateProfileCommand;
 import com.upc.viksadventuresapi.profile.domain.model.valueobjects.*;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @EqualsAndHashCode(callSuper = true)
@@ -34,36 +32,30 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     private School school;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public Profile(User user, CreateProfileCommand command) {
+    public Profile(User user) {
         this.user = user;
-        this.fullName = new FullName(command.firstName(), command.lastName());
-        this.birthDate = new BirthDate(LocalDate.parse(command.birthDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        this.sex = new Sex(command.sex());
-        this.gradeLevel = new GradeLevel(command.gradeLevel());
-        this.school = new School(command.school());
     }
 
     public String getFullName() {
-        return fullName.getFullName();
+        return fullName != null ? fullName.getFullName() : null;
     }
 
     public String getBirthDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return birthDate.birthDate().format(formatter);
+        return birthDate != null ? birthDate.formatted() : null;
     }
 
     public String getSex() {
-        return sex.sex();
+        return sex != null ? sex.sex() : null;
     }
 
     public String getGradeLevel() {
-        return gradeLevel.gradeLevel();
+        return gradeLevel != null ? gradeLevel.gradeLevel() : null;
     }
 
     public String getSchool() {
-        return school.school();
+        return school != null ? school.school() : null;
     }
 }

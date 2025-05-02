@@ -1,21 +1,25 @@
 package com.upc.viksadventuresapi.profile.interfaces.rest;
 
+import com.upc.viksadventuresapi.iam.infrastructure.authorization.configuration.JwtService;
+import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;
 import com.upc.viksadventuresapi.profile.domain.model.commands.DeleteProfileByIdCommand;
 import com.upc.viksadventuresapi.profile.domain.model.queries.GetAllProfilesQuery;
 import com.upc.viksadventuresapi.profile.domain.model.queries.GetProfileByIdQuery;
 import com.upc.viksadventuresapi.profile.domain.services.ProfileCommandService;
 import com.upc.viksadventuresapi.profile.domain.services.ProfileQueryService;
-import com.upc.viksadventuresapi.profile.interfaces.rest.resources.CreateProfileResource;
+import com.upc.viksadventuresapi.profile.interfaces.rest.resources.UpdateProfileResource;
 import com.upc.viksadventuresapi.profile.interfaces.rest.resources.ProfileResource;
-import com.upc.viksadventuresapi.profile.interfaces.rest.transform.CreateProfileCommandFromResourceAssembler;
+import com.upc.viksadventuresapi.profile.interfaces.rest.transform.UpdateProfileCommandFromResourceAssembler;
 import com.upc.viksadventuresapi.profile.interfaces.rest.transform.ProfileResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -30,24 +34,44 @@ import java.util.stream.Collectors;
 public class ProfilesController {
     private final ProfileQueryService profileQueryService;
     private final ProfileCommandService profileCommandService;
+    private final JwtService jwtService;
 
-    public ProfilesController(ProfileQueryService profileQueryService, ProfileCommandService profileCommandService) {
+    public ProfilesController(ProfileQueryService profileQueryService, ProfileCommandService profileCommandService, JwtService jwtService) {
         this.profileQueryService = profileQueryService;
         this.profileCommandService = profileCommandService;
+        this.jwtService = jwtService;
     }
 
     /**
-     * Creates a new Profile
-     * @param resource the resource containing the data to create the Profile
-     * @return the created Profile
+     * Updates a Profile
+     * @param resource the Profile resource to update
+     * @param authorizationHeader the authorization header containing the JWT token
+     * @return the updated Profile resource
      */
-    @PostMapping
-    public ResponseEntity<ProfileResource> createProfile(@RequestBody CreateProfileResource resource) {
-        var createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(resource);
-        var profile = profileCommandService.handle(createProfileCommand);
-        if (profile.isEmpty()) return ResponseEntity.badRequest().build();
-        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
-        return new ResponseEntity<>(profileResource, HttpStatus.CREATED);
+
+    @PutMapping
+    public ResponseEntity<ProfileResource> updateProfile(
+            @RequestBody UpdateProfileResource resource,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        // Extraer el token
+        String token = authorizationHeader.replace("Bearer ", "");
+
+        // Obtener userId desde el token
+        Long userId = jwtService.extractUserId(token);
+
+        // Convertir el recurso a comando
+        var command = UpdateProfileCommandFromResourceAssembler.toCommandFromResource(resource);
+
+        // Ejecutar la lógica de negocio
+        Optional<Profile> optionalProfile = profileCommandService.handle(command, userId);
+        if (optionalProfile.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Convertir entidad a recurso para retornar
+        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(optionalProfile.get());
+        return ResponseEntity.ok(profileResource);
     }
 
     /**

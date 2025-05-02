@@ -1,4 +1,4 @@
-package com.upc.viksadventuresapi.profile.domain.events;
+package com.upc.viksadventuresapi.profile.domain.model.events;
 
 import com.upc.viksadventuresapi.profile.domain.model.aggregates.LearningPathData;
 import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;

@@ -3,6 +3,7 @@ package com.upc.viksadventuresapi.profile.application.internal.queryservices;
 import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;
 import com.upc.viksadventuresapi.profile.domain.model.queries.GetAllProfilesQuery;
 import com.upc.viksadventuresapi.profile.domain.model.queries.GetProfileByIdQuery;
+import com.upc.viksadventuresapi.profile.domain.model.queries.GetProfileByUserIdQuery;
 import com.upc.viksadventuresapi.profile.domain.services.ProfileQueryService;
 import com.upc.viksadventuresapi.profile.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
     public Optional<Profile> handle(GetProfileByIdQuery query) {
         return profileRepository.findById(query.profileId());
     }
+
+    @Override
+    public Optional<Profile> handle(GetProfileByUserIdQuery query) { return profileRepository.findByUserId(query.userId()); }
 
     @Override
     public List<Profile> handle(GetAllProfilesQuery query) {

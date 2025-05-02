@@ -1,7 +1,6 @@
 package com.upc.viksadventuresapi.profile.interfaces.rest.resources;
 
-public record CreateProfileResource(
-        Long userId,
+public record UpdateProfileResource(
         String firstName,
         String lastName,
         String birthDate,

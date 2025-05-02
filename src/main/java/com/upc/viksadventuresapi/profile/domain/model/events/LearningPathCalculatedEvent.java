@@ -1,4 +1,4 @@
-package com.upc.viksadventuresapi.profile.domain.events;
+package com.upc.viksadventuresapi.profile.domain.model.events;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

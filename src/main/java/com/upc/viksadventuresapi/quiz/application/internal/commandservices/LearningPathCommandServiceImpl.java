@@ -1,6 +1,6 @@
 package com.upc.viksadventuresapi.quiz.application.internal.commandservices;
 
-import com.upc.viksadventuresapi.profile.domain.events.LearningPathCalculatedEvent;
+import com.upc.viksadventuresapi.profile.domain.model.events.LearningPathCalculatedEvent;
 import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Response;
 import com.upc.viksadventuresapi.quiz.domain.services.LearningPathCommandService;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResponseRepository;
