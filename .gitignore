@@ -32,5 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 
-### Private
+# Properties
 application-dev.properties
