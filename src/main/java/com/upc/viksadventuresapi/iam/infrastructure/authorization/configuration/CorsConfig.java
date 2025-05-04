@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedOrigins("http://localhost:4200",
                                 "https://vik-adventures-beta.vercel.app",
                                 "https://viks-adventures-api-production.up.railway.app"
