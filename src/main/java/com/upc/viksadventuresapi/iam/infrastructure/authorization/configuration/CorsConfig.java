@@ -14,7 +14,7 @@ public class CorsConfig {
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedOrigins("http://localhost:4200", "https://vik-adventures-beta.vercel.app");
+                        .allowedOrigins("http://localhost:4200", "https://vik-adventures-beta.vercel.app", "https://viks-adventures-api-production.up.railway.app");
             }
         };
     }
