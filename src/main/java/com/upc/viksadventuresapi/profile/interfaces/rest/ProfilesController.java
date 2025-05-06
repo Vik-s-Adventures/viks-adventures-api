@@ -109,4 +109,13 @@ public class ProfilesController {
         profileCommandService.handle(deleteProfileByIdCommand);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<ProfileResource> getProfileByUserId(@PathVariable Long userId) {
+        var profileOptional = profileQueryService.findByUserId(userId);
+        if (profileOptional.isEmpty()) return ResponseEntity.notFound().build();
+        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profileOptional.get());
+        return ResponseEntity.ok(profileResource);
+    }
+
 }

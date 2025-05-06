@@ -14,7 +14,10 @@ public class CorsConfig {
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedOrigins("http://localhost:4200",
+                        .allowedOrigins(
+                                "http://localhost:50515/",
+                                "http://localhost:63490/",
+                                "http://localhost:4200",
                                 "https://vik-adventures-beta.vercel.app",
                                 "https://viks-adventures-api-production.up.railway.app"
                         ).

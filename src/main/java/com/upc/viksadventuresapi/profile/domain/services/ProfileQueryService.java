@@ -12,4 +12,5 @@ public interface ProfileQueryService {
     Optional<Profile> handle(GetProfileByIdQuery query);
     Optional<Profile> handle(GetProfileByUserIdQuery query);
     List<Profile> handle(GetAllProfilesQuery query);
+    Optional<Profile> findByUserId(Long userId);
 }
