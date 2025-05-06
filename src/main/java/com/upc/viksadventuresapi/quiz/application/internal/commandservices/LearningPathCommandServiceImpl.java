@@ -5,6 +5,7 @@ import com.upc.viksadventuresapi.quiz.domain.model.aggregates.Response;
 import com.upc.viksadventuresapi.quiz.domain.services.LearningPathCommandService;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResponseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,17 +19,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class LearningPathCommandServiceImpl implements LearningPathCommandService {
-
     private final ResponseRepository responseRepository;
     private final ApplicationEventPublisher eventPublisher;
-    // Model URL
-    private static final String MODEL_URL = "https://viksmodelapi-production.up.railway.app/predecir_ruta";
+    private final String modelUrl;
 
     @Autowired
     public LearningPathCommandServiceImpl(ResponseRepository responseRepository,
-                                          ApplicationEventPublisher eventPublisher) {
+                                          ApplicationEventPublisher eventPublisher,
+                                          @Value("${model.api.url}") String modelUrl) {
         this.responseRepository = responseRepository;
         this.eventPublisher = eventPublisher;
+        this.modelUrl = modelUrl;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class LearningPathCommandServiceImpl implements LearningPathCommandServic
         requestBody.put("id_estudiante", profileId);
         requestBody.put("preguntas", answerScores);
 
-        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(MODEL_URL, requestBody, (Class<Map<String, Object>>) (Class<?>) Map.class);
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(modelUrl, requestBody, (Class<Map<String, Object>>) (Class<?>) Map.class);
 
         Map<String, Object> responseBody = responseEntity.getBody();
 
