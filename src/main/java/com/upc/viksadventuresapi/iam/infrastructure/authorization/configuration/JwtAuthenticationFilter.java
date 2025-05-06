@@ -1,6 +1,6 @@
 package com.upc.viksadventuresapi.iam.infrastructure.authorization.configuration;
 
-import com.upc.viksadventuresapi.iam.domain.model.aggregates.User;
+import com.upc.viksadventuresapi.iam.domain.model.valueobjects.CustomUserDetails;
 import com.upc.viksadventuresapi.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

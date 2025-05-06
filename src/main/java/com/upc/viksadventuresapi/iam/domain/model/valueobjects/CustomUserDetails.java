@@ -1,7 +1,6 @@
-package com.upc.viksadventuresapi.iam.infrastructure.authorization.configuration;
+package com.upc.viksadventuresapi.iam.domain.model.valueobjects;
 
 import com.upc.viksadventuresapi.iam.domain.model.aggregates.User;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
