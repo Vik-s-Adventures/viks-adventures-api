@@ -18,12 +18,6 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     private FullName fullName;
 
     @Embedded
-    private FullName firstName;
-
-    @Embedded
-    private FullName lastName;
-
-    @Embedded
     private BirthDate birthDate;
 
     @Embedded
