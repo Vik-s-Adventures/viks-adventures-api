@@ -9,6 +9,8 @@ public class ProfileResourceFromEntityAssembler {
                 entity.getId(),
                 entity.getUser().getId(),
                 entity.getFullName(),
+                entity.getFirstName(),
+                entity.getLastName(),
                 entity.getBirthDate(),
                 entity.getSex(),
                 entity.getGradeLevel(),

@@ -18,6 +18,12 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     private FullName fullName;
 
     @Embedded
+    private FullName firstName;
+
+    @Embedded
+    private FullName lastName;
+
+    @Embedded
     private BirthDate birthDate;
 
     @Embedded
@@ -40,6 +46,10 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     public String getFullName() {
         return fullName != null ? fullName.getFullName() : null;
     }
+
+    public String getFirstName() {return fullName != null ? fullName.firstName() : null;}
+
+    public String getLastName() {return fullName != null ? fullName.lastName() : null;}
 
     public String getBirthDate() {
         return birthDate != null ? birthDate.formatted() : null;
