@@ -1,5 +1,8 @@
 package com.upc.viksadventuresapi.adventure.domain.model.valueobjects;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record Welcome(String welcome) {
     public Welcome {
         if (welcome == null || welcome.isBlank()) {

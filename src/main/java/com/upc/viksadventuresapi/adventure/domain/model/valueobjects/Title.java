@@ -1,5 +1,8 @@
 package com.upc.viksadventuresapi.adventure.domain.model.valueobjects;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record Title(String title) {
     public Title {
         if (title == null || title.isBlank()) {

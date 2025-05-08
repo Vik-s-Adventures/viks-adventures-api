@@ -1,7 +1,10 @@
 package com.upc.viksadventuresapi.adventure.domain.model.valueobjects;
 
+import jakarta.persistence.Embeddable;
+
 import java.util.regex.Pattern;
 
+@Embeddable
 public record ImageUrl(String imageUrl) {
     // Validate image URL format
     private static final Pattern URL_PATTERN = Pattern.compile("^(http[s]?://.*)?(?:jpg|jpeg|png|gif)$");
