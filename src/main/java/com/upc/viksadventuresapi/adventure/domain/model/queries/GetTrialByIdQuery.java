@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.adventure.domain.model.queries;
 
-public record GetTrialByIdQuery() {
+public record GetTrialByIdQuery(Long trial) {
 }

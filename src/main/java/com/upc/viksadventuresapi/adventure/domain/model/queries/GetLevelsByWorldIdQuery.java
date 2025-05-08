@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.adventure.domain.model.queries;
 
-public record GetLevelsByWorldIdQuery() {
+public record GetLevelsByWorldIdQuery(Long worldId) {
 }

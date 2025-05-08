@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.adventure.domain.model.queries;
 
-public record GetPathByIdQuery() {
+public record GetPathByIdQuery(Long pathId) {
 }

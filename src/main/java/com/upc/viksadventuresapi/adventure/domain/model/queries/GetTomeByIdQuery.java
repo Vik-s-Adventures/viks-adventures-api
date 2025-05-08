@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.adventure.domain.model.queries;
 
-public record GetTomeByIdQuery() {
+public record GetTomeByIdQuery(Long tomeId) {
 }
