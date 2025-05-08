@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.adventure.domain.model.queries;
 
-public record GetPathsByWorldIdQuery (Long worldId){
+public record GetFinalBattlesByLevelIdQuery(Long worldId) {
 }
