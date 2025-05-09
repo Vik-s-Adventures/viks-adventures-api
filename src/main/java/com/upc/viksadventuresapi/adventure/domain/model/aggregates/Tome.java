@@ -1,5 +1,6 @@
 package com.upc.viksadventuresapi.adventure.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.adventure.domain.model.commands.CreateTomeCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Advice;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Title;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Welcome;
@@ -29,4 +30,8 @@ public class Tome extends AuditableAbstractAggregateRoot<Tome> {
 
     @Embedded
     private Advice advice;
+
+    public Tome(Level level, CreateTomeCommand command) {
+        this(level, new Title(command.title()), new Welcome(command.welcome()), new Advice(command.advice()));
+    }
 }

@@ -1,5 +1,6 @@
 package com.upc.viksadventuresapi.adventure.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.adventure.domain.model.commands.CreatePathCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Description;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.ImageUrl;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -25,4 +26,8 @@ public class Path extends AuditableAbstractAggregateRoot<Path> {
 
     @Embedded
     private ImageUrl imageUrl;
+
+    public Path(Level level, CreatePathCommand command) {
+        this(level, new Description(command.description()), new ImageUrl(command.imageUrl()));
+    }
 }

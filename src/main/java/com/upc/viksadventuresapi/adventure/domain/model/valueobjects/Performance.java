@@ -1,5 +1,8 @@
 package com.upc.viksadventuresapi.adventure.domain.model.valueobjects;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public record Performance(String performance) {
     public Performance {
         if (performance == null || performance.isBlank()) {

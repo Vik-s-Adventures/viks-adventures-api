@@ -5,23 +5,30 @@ import com.upc.viksadventuresapi.adventure.domain.model.queries.GetAllTrialsQuer
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetTrialByIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetTrialsByLevelIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.services.TrialQueryService;
+import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.TrialRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
+@RequiredArgsConstructor
 public class TrialQueryServiceImpl implements TrialQueryService {
+    private final TrialRepository repository;
+
     @Override
     public Optional<Trial> handle(GetTrialByIdQuery query) {
-        return Optional.empty();
+        return repository.findById(query.trialId());
     }
 
     @Override
     public List<Trial> handle(GetTrialsByLevelIdQuery query) {
-        return List.of();
+        return repository.findByLevelId(query.levelId());
     }
 
     @Override
     public List<Trial> handle(GetAllTrialsQuery query) {
-        return List.of();
+        return repository.findAll();
     }
 }

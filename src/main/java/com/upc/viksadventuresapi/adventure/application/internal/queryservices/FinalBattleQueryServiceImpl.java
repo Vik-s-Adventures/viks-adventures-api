@@ -5,23 +5,30 @@ import com.upc.viksadventuresapi.adventure.domain.model.queries.GetAllFinalBattl
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetFinalBattleByIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetFinalBattlesByLevelIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.services.FinalBattleQueryService;
+import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.FinalBattleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
+@RequiredArgsConstructor
 public class FinalBattleQueryServiceImpl implements FinalBattleQueryService {
+    private final FinalBattleRepository finalBattleRepository;
+
     @Override
     public Optional<FinalBattle> handle(GetFinalBattleByIdQuery query) {
-        return Optional.empty();
+        return finalBattleRepository.findById(query.finalBattleId());
     }
 
     @Override
     public List<FinalBattle> handle(GetFinalBattlesByLevelIdQuery query) {
-        return List.of();
+        return finalBattleRepository.findByLevelId(query.levelId());
     }
 
     @Override
     public List<FinalBattle> handle(GetAllFinalBattlesQuery query) {
-        return List.of();
+        return finalBattleRepository.findAll();
     }
 }

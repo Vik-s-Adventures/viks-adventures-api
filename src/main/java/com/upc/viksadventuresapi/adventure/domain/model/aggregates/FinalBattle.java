@@ -1,5 +1,6 @@
 package com.upc.viksadventuresapi.adventure.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.adventure.domain.model.commands.CreateFinalBattleCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Description;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
@@ -21,4 +22,8 @@ public class FinalBattle extends AuditableAbstractAggregateRoot<FinalBattle> {
 
     @Embedded
     private Description description;
+
+    public FinalBattle(Level level, CreateFinalBattleCommand command) {
+        this(level, new Description(command.description()));
+    }
 }

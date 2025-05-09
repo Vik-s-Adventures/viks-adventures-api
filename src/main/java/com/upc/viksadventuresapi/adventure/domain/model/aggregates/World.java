@@ -1,5 +1,6 @@
 package com.upc.viksadventuresapi.adventure.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.adventure.domain.model.commands.CreateWorldCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.enums.CompetenceType;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Name;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -21,4 +22,8 @@ public class World extends AuditableAbstractAggregateRoot<World> {
 
     @Enumerated(EnumType.STRING)
     CompetenceType competenceType;
+
+    public World(CreateWorldCommand command){
+        this(new Name(command.name()), command.competenceType());
+    }
 }
