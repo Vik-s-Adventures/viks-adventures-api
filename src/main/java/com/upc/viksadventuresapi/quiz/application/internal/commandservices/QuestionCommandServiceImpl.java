@@ -41,7 +41,6 @@ public class QuestionCommandServiceImpl implements QuestionCommandService {
 
     }
 
-
     @Override
     public void handle(DeleteQuestionByIdCommand command) {
         if (!questionRepository.existsById(command.questionId())) {
