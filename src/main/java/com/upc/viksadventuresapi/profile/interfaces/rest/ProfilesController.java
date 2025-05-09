@@ -99,6 +99,20 @@ public class ProfilesController {
     }
 
     /**
+     * Gets a Profile by its userId
+     * @param userId the id of the user to get the Profile for
+     * @return the Profile resource associated with given user id
+     */
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<ProfileResource> getProfileByUserId(@PathVariable Long userId) {
+        var getProfileByUserIdQuery = new GetProfileByIdQuery(userId);
+        var profile = profileQueryService.handle(getProfileByUserIdQuery);
+        if (profile.isEmpty()) return ResponseEntity.badRequest().build();
+        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
+        return ResponseEntity.ok(profileResource);
+    }
+
+    /**
      * Deletes a Profile by its id
      * @param profileId the id of the Profile to delete
      * @return a response entity with no content
@@ -109,13 +123,4 @@ public class ProfilesController {
         profileCommandService.handle(deleteProfileByIdCommand);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/by-user/{userId}")
-    public ResponseEntity<ProfileResource> getProfileByUserId(@PathVariable Long userId) {
-        var profileOptional = profileQueryService.findByUserId(userId);
-        if (profileOptional.isEmpty()) return ResponseEntity.notFound().build();
-        var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profileOptional.get());
-        return ResponseEntity.ok(profileResource);
-    }
-
 }

@@ -31,9 +31,4 @@ public class ProfileQueryServiceImpl implements ProfileQueryService {
     public List<Profile> handle(GetAllProfilesQuery query) {
         return profileRepository.findAll();
     }
-
-    @Override
-    public Optional<Profile> findByUserId(Long userId) {
-        return profileRepository.findByUserId(userId);
-    }
 }
