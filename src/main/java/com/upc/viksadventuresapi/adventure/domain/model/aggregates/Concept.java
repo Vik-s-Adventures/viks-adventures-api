@@ -1,5 +1,6 @@
 package com.upc.viksadventuresapi.adventure.domain.model.aggregates;
 
+import com.upc.viksadventuresapi.adventure.domain.model.commands.CreateConceptCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Description;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.ImageUrl;
 import com.upc.viksadventuresapi.adventure.domain.model.valueobjects.Subtitle;
@@ -29,4 +30,13 @@ public class Concept extends AuditableAbstractAggregateRoot<Concept> {
 
     @Embedded
     private ImageUrl imageUrl;
+
+    public Concept(Tome tome, CreateConceptCommand command) {
+        this(
+                tome,
+                new Subtitle(command.subtitle()),
+                new Description(command.description()),
+                new ImageUrl(command.imageUrl())
+        );
+    }
 }
