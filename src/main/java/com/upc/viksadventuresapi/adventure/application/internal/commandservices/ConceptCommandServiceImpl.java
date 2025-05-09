@@ -1,9 +1,7 @@
 package com.upc.viksadventuresapi.adventure.application.internal.commandservices;
 
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Concept;
-import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Level;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Tome;
-import com.upc.viksadventuresapi.adventure.domain.model.aggregates.World;
 import com.upc.viksadventuresapi.adventure.domain.model.commands.CreateConceptCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.commands.DeleteConceptCommand;
 import com.upc.viksadventuresapi.adventure.domain.services.ConceptCommandService;
