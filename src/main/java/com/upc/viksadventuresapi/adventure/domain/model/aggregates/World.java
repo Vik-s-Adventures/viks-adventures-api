@@ -24,6 +24,6 @@ public class World extends AuditableAbstractAggregateRoot<World> {
     CompetenceType competenceType;
 
     public World(CreateWorldCommand command){
-        this(new Name(command.name()), command.competenceType());
+        this(new Name(command.name()), CompetenceType.valueOf(command.competenceType()));
     }
 }
