@@ -19,7 +19,8 @@ public class CorsConfig {
                                 "http://localhost:63490/",
                                 "http://localhost:4200",
                                 "https://vik-adventures-beta.vercel.app",
-                                "https://viks-adventures-api-production.up.railway.app"
+                                "https://viks-adventures-api-production.up.railway.app",
+                                "https://viks-adventures-api-hipx.onrender.com/"
                         ).
                         allowCredentials(true);
             }
