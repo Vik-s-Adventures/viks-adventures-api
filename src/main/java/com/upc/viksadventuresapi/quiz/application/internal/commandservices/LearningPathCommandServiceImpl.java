@@ -45,8 +45,8 @@ public class LearningPathCommandServiceImpl implements LearningPathCommandServic
                 .map(response -> response.isOptionCorrect() ? 1 : 0)
                 .collect(Collectors.toList());
 
-        // Obtener el learningPath del modelo
-        List<Integer> rawLearningPath = requestLearningPathFromModel(profileId, answerScores);
+        // Obtener el learningPath del modelo, ahora pasando competenciaId
+        List<Integer> rawLearningPath = requestLearningPathFromModel(profileId, answerScores, quizId);
 
         // Publicar el evento de cálculo de ruta de aprendizaje
         publishLearningPathCalculatedEvent(profileId, quizId, answerScores, rawLearningPath);
@@ -60,14 +60,21 @@ public class LearningPathCommandServiceImpl implements LearningPathCommandServic
     }
 
     @SuppressWarnings("unchecked")
-    private List<Integer> requestLearningPathFromModel(Long profileId, List<Integer> answerScores) {
-        // Realizar la llamada al modelo externo para obtener el learningPath
+    private List<Integer> requestLearningPathFromModel(Long profileId, List<Integer> answerScores, Long quizId) {
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("id_estudiante", profileId);
         requestBody.put("preguntas", answerScores);
 
-        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(modelUrl, requestBody, (Class<Map<String, Object>>) (Class<?>) Map.class);
+        // Convertir quizId a String con prefijo "C"
+        String competenciaId = "C" + quizId;
+        requestBody.put("competencia", competenciaId);
+
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.postForEntity(
+                modelUrl,
+                requestBody,
+                (Class<Map<String, Object>>) (Class<?>) Map.class
+        );
 
         Map<String, Object> responseBody = responseEntity.getBody();
 
