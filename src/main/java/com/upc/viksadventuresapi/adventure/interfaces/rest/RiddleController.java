@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(value = "/api/v1/trial-riddles", produces = "application/json")
-@Tag(name = "Trial Riddles", description = "Trial Riddles Management Endpoints")
-public class TrialRiddleController {
+@RequestMapping(value = "/api/v1/riddles", produces = "application/json")
+@Tag(name = "Riddles", description = "Riddles Management Endpoints")
+public class RiddleController {
     private final TrialRiddleCommandService trialRiddleCommandService;
     private final TrialRiddleQueryService trialRiddleQueryService;
 
