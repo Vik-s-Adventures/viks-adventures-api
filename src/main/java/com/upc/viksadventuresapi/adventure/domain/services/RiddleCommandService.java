@@ -6,7 +6,7 @@ import com.upc.viksadventuresapi.adventure.domain.model.commands.DeleteRiddleCom
 
 import java.util.Optional;
 
-public interface TrialRiddleCommandService {
+public interface RiddleCommandService {
     Optional<Riddle> handle(CreateRiddleCommand command);
     void handle(DeleteRiddleCommand command);
 }

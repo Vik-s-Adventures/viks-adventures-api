@@ -1,10 +1,11 @@
 package com.upc.viksadventuresapi.adventure.interfaces.rest;
 
+import com.upc.viksadventuresapi.adventure.domain.model.commands.DeleteRiddleCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetAllRiddlesQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetRiddleByIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetRiddlesByTrialIdQuery;
-import com.upc.viksadventuresapi.adventure.domain.services.TrialRiddleCommandService;
-import com.upc.viksadventuresapi.adventure.domain.services.TrialRiddleQueryService;
+import com.upc.viksadventuresapi.adventure.domain.services.RiddleCommandService;
+import com.upc.viksadventuresapi.adventure.domain.services.RiddleQueryService;
 import com.upc.viksadventuresapi.adventure.interfaces.rest.resources.CreateRiddleResource;
 import com.upc.viksadventuresapi.adventure.interfaces.rest.resources.RiddleResource;
 import com.upc.viksadventuresapi.adventure.interfaces.rest.transform.CreateRiddleCommandFromResourceAssembler;
@@ -22,44 +23,51 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/api/v1/riddles", produces = "application/json")
 @Tag(name = "Riddles", description = "Riddles Management Endpoints")
 public class RiddleController {
-    private final TrialRiddleCommandService trialRiddleCommandService;
-    private final TrialRiddleQueryService trialRiddleQueryService;
+    private final RiddleCommandService riddleCommandService;
+    private final RiddleQueryService riddleQueryService;
 
     @PostMapping
-    public ResponseEntity<RiddleResource> createTrialRiddle(@RequestBody CreateRiddleResource resource) {
+    public ResponseEntity<RiddleResource> createRiddle(@RequestBody CreateRiddleResource resource) {
         var command = CreateRiddleCommandFromResourceAssembler.toCommandFromResource(resource);
-        var trialRiddle = trialRiddleCommandService.handle(command);
-        if (trialRiddle.isEmpty()) return ResponseEntity.badRequest().build();
-        var resourceResponse = RiddleResourceFromEntityAssembler.toResourceFromEntity(trialRiddle.get());
+        var riddle = riddleCommandService.handle(command);
+        if (riddle.isEmpty()) return ResponseEntity.badRequest().build();
+        var resourceResponse = RiddleResourceFromEntityAssembler.toResourceFromEntity(riddle.get());
         return ResponseEntity.status(201).body(resourceResponse);
     }
 
-    @GetMapping("/{trialRiddleId}")
-    public ResponseEntity<RiddleResource> getTrialRiddleById(@PathVariable Long trialRiddleId) {
-        var query = new GetRiddleByIdQuery(trialRiddleId);
-        var trialRiddle = trialRiddleQueryService.handle(query);
-        if (trialRiddle.isEmpty()) return ResponseEntity.notFound().build();
-        var resource = RiddleResourceFromEntityAssembler.toResourceFromEntity(trialRiddle.get());
+    @GetMapping("/{riddleId}")
+    public ResponseEntity<RiddleResource> getRiddleById(@PathVariable Long riddleId) {
+        var query = new GetRiddleByIdQuery(riddleId);
+        var riddle = riddleQueryService.handle(query);
+        if (riddle.isEmpty()) return ResponseEntity.notFound().build();
+        var resource = RiddleResourceFromEntityAssembler.toResourceFromEntity(riddle.get());
         return ResponseEntity.ok(resource);
     }
 
     @GetMapping("/trial/{trialId}")
-    public ResponseEntity<List<RiddleResource>> getTrialRiddlesByTrialId(@PathVariable Long trialId) {
+    public ResponseEntity<List<RiddleResource>> getRiddlesByTrialId(@PathVariable Long trialId) {
         var query = new GetRiddlesByTrialIdQuery(trialId);
-        var trialRiddles = trialRiddleQueryService.handle(query);
-        var resources = trialRiddles.stream()
+        var riddles = riddleQueryService.handle(query);
+        var resources = riddles.stream()
                 .map(RiddleResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(resources);
     }
 
     @GetMapping
-    public ResponseEntity<List<RiddleResource>> getAllTrialRiddles() {
+    public ResponseEntity<List<RiddleResource>> getAllRiddles() {
         var query = new GetAllRiddlesQuery();
-        var trialRiddles = trialRiddleQueryService.handle(query);
-        var resources = trialRiddles.stream()
+        var riddles = riddleQueryService.handle(query);
+        var resources = riddles.stream()
                 .map(RiddleResourceFromEntityAssembler::toResourceFromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(resources);
+    }
+
+    @DeleteMapping("/{riddleId}")
+    public ResponseEntity<Void> deleteRiddle(@PathVariable Long riddleId) {
+        var deleteRiddleCommand = new DeleteRiddleCommand(riddleId);
+        riddleCommandService.handle(deleteRiddleCommand);
+        return ResponseEntity.noContent().build();
     }
 }

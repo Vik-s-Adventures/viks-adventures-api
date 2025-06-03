@@ -4,7 +4,7 @@ import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Trial;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Riddle;
 import com.upc.viksadventuresapi.adventure.domain.model.commands.CreateRiddleCommand;
 import com.upc.viksadventuresapi.adventure.domain.model.commands.DeleteRiddleCommand;
-import com.upc.viksadventuresapi.adventure.domain.services.TrialRiddleCommandService;
+import com.upc.viksadventuresapi.adventure.domain.services.RiddleCommandService;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.TrialRepository;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.RiddleRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RiddleCommandServiceImpl implements TrialRiddleCommandService {
+public class RiddleCommandServiceImpl implements RiddleCommandService {
     private final TrialRepository trialRepository;
     private final RiddleRepository riddleRepository;
 
@@ -27,15 +27,15 @@ public class RiddleCommandServiceImpl implements TrialRiddleCommandService {
         }
 
         Trial trial = optionalTrial.get();
-        var trialRiddle = new Riddle(trial, command);
+        var riddle = new Riddle(trial, command);
 
         try {
-            riddleRepository.save(trialRiddle);
+            riddleRepository.save(riddle);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while saving trial riddle: " + e.getMessage());
         }
 
-        return Optional.of(trialRiddle);
+        return Optional.of(riddle);
     }
 
     @Override

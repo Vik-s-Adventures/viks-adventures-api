@@ -4,7 +4,7 @@ import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Riddle;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetAllRiddlesQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetRiddleByIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetRiddlesByTrialIdQuery;
-import com.upc.viksadventuresapi.adventure.domain.services.TrialRiddleQueryService;
+import com.upc.viksadventuresapi.adventure.domain.services.RiddleQueryService;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.RiddleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RiddleQueryServiceImpl implements TrialRiddleQueryService {
+public class RiddleQueryServiceImpl implements RiddleQueryService {
     private final RiddleRepository riddleRepository;
 
     @Override
