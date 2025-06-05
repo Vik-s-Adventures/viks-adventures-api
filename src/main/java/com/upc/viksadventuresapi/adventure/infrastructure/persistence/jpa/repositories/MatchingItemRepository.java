@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface MatchingItemRepository extends JpaRepository<MatchingItem, Long> {
+    List<MatchingItem> findByMatchingId(Long matchingId);
     List<MatchingItem> findByMatchingPairId(Long matchingPairId);
 }
