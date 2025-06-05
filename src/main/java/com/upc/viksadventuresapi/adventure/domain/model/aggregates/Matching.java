@@ -9,6 +9,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,6 +25,15 @@ public class Matching extends AuditableAbstractAggregateRoot<Matching> {
 
     @Embedded
     private Description description;
+
+    @OneToMany(mappedBy = "matching", cascade = CascadeType.ALL)
+    private List<MatchingPair> matchingPairs = new ArrayList<>();
+
+    public Matching(Trial trial, Description description) {
+        this.trial = trial;
+        this.description = description;
+        this.matchingPairs = new ArrayList<>();
+    }
 
     public Matching(Trial trial, CreateMatchingCommand command) {
         this(
