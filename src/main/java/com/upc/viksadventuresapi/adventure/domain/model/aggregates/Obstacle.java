@@ -22,16 +22,16 @@ public class Obstacle extends AuditableAbstractAggregateRoot<Obstacle> {
     private FinalBattle finalBattle;
 
     @Embedded
-    private ImageUrl imageUrl;
+    private Description description;
 
     @Embedded
-    private Description description;
+    private ImageUrl imageUrl;
 
     public Obstacle(FinalBattle finalBattle, CreateObstacleCommand command){
         this(
                 finalBattle,
-                new ImageUrl(command.imageUrl()),
-                new Description(command.description())
+                new Description(command.description()),
+                new ImageUrl(command.imageUrl())
         );
     }
 }
