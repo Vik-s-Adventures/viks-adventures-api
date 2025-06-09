@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.journey.domain.model.queries;
 
-public record GetPlayerProgressByIdQuery() {
+public record GetPlayerProgressByIdQuery(Long playerProgressId) {
 }

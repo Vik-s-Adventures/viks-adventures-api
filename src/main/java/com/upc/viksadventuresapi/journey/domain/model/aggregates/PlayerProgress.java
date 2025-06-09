@@ -1,6 +1,7 @@
 package com.upc.viksadventuresapi.journey.domain.model.aggregates;
 
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Level;
+import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerProgressCommand;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -28,4 +29,14 @@ public class PlayerProgress extends AuditableAbstractAggregateRoot<PlayerProgres
     private Boolean completed;
     private Integer score;
     private LocalDateTime lastAccessed;
+
+    public PlayerProgress(Player player, Level level, CreatePlayerProgressCommand command) {
+        this(
+            player,
+            level,
+            command.completed(),
+            command.score(),
+            command.lastAccessed()
+        );
+    }
 }

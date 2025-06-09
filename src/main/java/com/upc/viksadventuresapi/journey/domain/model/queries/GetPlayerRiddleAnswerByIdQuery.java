@@ -1,4 +1,4 @@
 package com.upc.viksadventuresapi.journey.domain.model.queries;
 
-public record GetPlayerRiddleAnswerByIdQuery() {
+public record GetPlayerRiddleAnswerByIdQuery(Long playerRiddleAnswerId) {
 }

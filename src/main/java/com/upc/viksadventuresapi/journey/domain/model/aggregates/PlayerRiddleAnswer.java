@@ -1,6 +1,7 @@
 package com.upc.viksadventuresapi.journey.domain.model.aggregates;
 
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.RiddleDetail;
+import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerRiddleAnswerCommand;
 import com.upc.viksadventuresapi.journey.domain.model.valueobjects.EnteredAnswer;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
@@ -26,4 +27,12 @@ public class PlayerRiddleAnswer extends AuditableAbstractAggregateRoot<PlayerRid
 
     @Embedded
     private EnteredAnswer enteredAnswer;
+
+    public PlayerRiddleAnswer(PlayerProgress playerProgress, RiddleDetail riddleDetail, CreatePlayerRiddleAnswerCommand command) {
+        this(
+            playerProgress,
+            riddleDetail,
+            new EnteredAnswer(command.enteredAnswer())
+        );
+    }
 }
