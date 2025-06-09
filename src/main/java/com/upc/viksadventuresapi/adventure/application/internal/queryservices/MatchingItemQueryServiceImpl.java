@@ -3,6 +3,7 @@ package com.upc.viksadventuresapi.adventure.application.internal.queryservices;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.MatchingItem;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetAllMatchingItemsQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetMatchingItemByIdQuery;
+import com.upc.viksadventuresapi.adventure.domain.model.queries.GetMatchingItemsByMatchingIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.model.queries.GetMatchingItemsByMatchingPairIdQuery;
 import com.upc.viksadventuresapi.adventure.domain.services.MatchingItemQueryService;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.MatchingItemRepository;
@@ -20,6 +21,11 @@ public class MatchingItemQueryServiceImpl implements MatchingItemQueryService {
     @Override
     public Optional<MatchingItem> handle(GetMatchingItemByIdQuery query) {
         return matchingItemRepository.findById(query.matchingItemId());
+    }
+
+    @Override
+    public List<MatchingItem> handle(GetMatchingItemsByMatchingIdQuery query) {
+        return matchingItemRepository.findByMatchingId(query.matchingId());
     }
 
     @Override

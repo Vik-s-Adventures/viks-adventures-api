@@ -53,6 +53,16 @@ public class MatchingItemController {
         return ResponseEntity.ok(resources);
     }
 
+    @GetMapping("/matching/{matchingId}")
+    public ResponseEntity<List<MatchingItemResource>> getMatchingItemsByMatching(@PathVariable Long matchingId) {
+        var query = new GetMatchingItemsByMatchingPairIdQuery(matchingId);
+        var items = matchingItemQueryService.handle(query);
+        var resources = items.stream()
+                .map(MatchingItemResourceFromEntityAssembler::toResourceFromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(resources);
+    }
+
     @DeleteMapping("/{matchingItemId}")
     public ResponseEntity<Void> deleteMatchingItem(@PathVariable Long matchingItemId) {
         var command = new DeleteMatchingItemCommand(matchingItemId);

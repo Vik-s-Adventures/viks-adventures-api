@@ -17,7 +17,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "matching_items")
 public class MatchingItem extends AuditableAbstractAggregateRoot<MatchingItem> {
     @ManyToOne
-    @JoinColumn(name = "matching_pair_id", nullable = false)
+    @JoinColumn(name = "matching_id")
+    private Matching matching;
+
+    @ManyToOne
+    @JoinColumn(name = "matching_pair_id")
     private MatchingPair matchingPair;
 
     @Embedded
@@ -25,8 +29,9 @@ public class MatchingItem extends AuditableAbstractAggregateRoot<MatchingItem> {
 
     boolean isDistractor;
 
-    public MatchingItem(MatchingPair matchingPair, CreateMatchingItemCommand command) {
+    public MatchingItem(Matching matching, MatchingPair matchingPair, CreateMatchingItemCommand command) {
         this(
+                matching,
                 matchingPair,
                 new ImageUrl(command.imageUrl()),
                 command.isDistractor()
