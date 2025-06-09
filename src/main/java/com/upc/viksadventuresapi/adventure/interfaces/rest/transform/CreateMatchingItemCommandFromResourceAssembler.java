@@ -6,6 +6,7 @@ import com.upc.viksadventuresapi.adventure.interfaces.rest.resources.CreateMatch
 public class CreateMatchingItemCommandFromResourceAssembler {
     public static CreateMatchingItemCommand toCommandFromResource(CreateMatchingItemResource resource) {
         return new CreateMatchingItemCommand(
+                resource.matchingId(),
                 resource.matchingPairId(),
                 resource.imageUrl(),
                 resource.isDistractor()

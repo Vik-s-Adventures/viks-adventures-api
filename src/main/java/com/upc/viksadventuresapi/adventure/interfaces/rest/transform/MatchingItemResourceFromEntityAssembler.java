@@ -7,6 +7,7 @@ public class MatchingItemResourceFromEntityAssembler {
     public static MatchingItemResource toResourceFromEntity(MatchingItem entity) {
         return new MatchingItemResource(
                 entity.getId(),
+                entity.getMatching().getId(),
                 entity.getMatchingPair().getId(),
                 entity.getImageUrl().imageUrl(),
                 entity.isDistractor()
