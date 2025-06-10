@@ -1,15 +1,20 @@
 package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Concept;
+import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Tome;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.ConceptRepository;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerTomesReviewed;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerTomesReviewedCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerTomesReviewedCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerTomesReviewedCommand;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerTomesReviewedCreatedEvent;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerTomesReviewedUpdatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerTomesReviewedCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerTomesReviewedRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +25,7 @@ public class PlayerTomesReviewedCommandServiceImpl implements PlayerTomesReviewe
     private final PlayerTomesReviewedRepository playerTomesReviewedRepository;
     private final PlayerProgressRepository playerProgressRepository;
     private final ConceptRepository conceptRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerTomesReviewed> handle(CreatePlayerTomesReviewedCommand command) {
@@ -37,7 +43,34 @@ public class PlayerTomesReviewedCommandServiceImpl implements PlayerTomesReviewe
             throw new IllegalArgumentException("Error while saving player tomes reviewed: " + e.getMessage(), e);
         }
 
+        // Publish event after saving
+        eventPublisher.publishEvent(new PlayerTomesReviewedCreatedEvent(this, playerTomesReviewed));
+
         return Optional.of(playerTomesReviewed);
+    }
+
+    @Override
+    public Optional<PlayerTomesReviewed> handle(UpdatePlayerTomesReviewedCommand command) {
+        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
+                .orElseThrow(() -> new IllegalArgumentException("Player progress with ID " + command.playerProgressId() + " does not exist."));
+
+        Concept newConcept = conceptRepository.findById(command.conceptId())
+                .orElseThrow(() -> new IllegalArgumentException("Concept with ID " + command.conceptId() + " does not exist."));
+
+        Tome tome = newConcept.getTome();
+
+        PlayerTomesReviewed existing = playerTomesReviewedRepository
+                .findByPlayerProgressAndConcept_Tome(playerProgress, tome)
+                .orElseThrow(() -> new IllegalArgumentException("No PlayerTomesReviewed found for this progress and tome."));
+
+        // Actualiza el concept (si no es el mismo)
+        if (!existing.getConcept().getId().equals(newConcept.getId())) {
+            existing.setConcept(newConcept);
+            playerTomesReviewedRepository.save(existing);
+            eventPublisher.publishEvent(new PlayerTomesReviewedUpdatedEvent(this, existing));
+        }
+
+        return Optional.of(existing);
     }
 
     @Override

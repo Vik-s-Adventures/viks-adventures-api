@@ -6,10 +6,12 @@ import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerFinalBatt
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerFinalBattleCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerFinalBattleCommand;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerFinalBattleCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerFinalBattleCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerFinalBattleRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +22,7 @@ public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCom
     private final PlayerFinalBattleRepository playerFinalBattleRepository;
     private final PlayerProgressRepository playerProgressRepository;
     private final ObstacleOptionRepository obstacleOptionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerFinalBattle> handle(CreatePlayerFinalBattleCommand command) {
@@ -36,6 +39,9 @@ public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCom
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while saving PlayerFinalBattle: " + e.getMessage(), e);
         }
+
+        // Publish the event after saving
+        eventPublisher.publishEvent(new PlayerFinalBattleCreatedEvent(this, playerFinalBattle));
 
         return Optional.of(playerFinalBattle);
     }

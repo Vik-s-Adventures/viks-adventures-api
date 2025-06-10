@@ -6,10 +6,12 @@ import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerRiddleAnswer;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerRiddleAnswerCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerRiddleAnswerCommand;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerRiddleAnswerCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerRiddleAnswerCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRiddleAnswerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +22,7 @@ public class PlayerRiddleAnswerCommandServiceImpl implements PlayerRiddleAnswerC
     private final PlayerRiddleAnswerRepository playerRiddleAnswerRepository;
     private final PlayerProgressRepository playerProgressRepository;
     private final RiddleDetailRepository riddleDetailRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerRiddleAnswer> handle(CreatePlayerRiddleAnswerCommand command) {
@@ -37,6 +40,8 @@ public class PlayerRiddleAnswerCommandServiceImpl implements PlayerRiddleAnswerC
             throw new IllegalArgumentException("Error while saving PlayerRiddleAnswer: " + e.getMessage(), e);
         }
 
+        // Publish event after successful save
+        eventPublisher.publishEvent(new PlayerRiddleAnswerCreatedEvent(this, playerRiddleAnswer));
         return Optional.of(playerRiddleAnswer);
     }
 
