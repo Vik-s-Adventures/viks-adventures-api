@@ -6,10 +6,12 @@ import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerLinkingPa
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerLinkingPairCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerLinkingPairCommand;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerLinkingPairCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerLinkingPairCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerLinkingPairRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +22,7 @@ public class PlayerLinkingPairCommandServiceImpl implements PlayerLinkingPairCom
     private final PlayerLinkingPairRepository playerLinkingPairRepository;
     private final PlayerProgressRepository playerProgressRepository;
     private final LinkingPairRepository linkingPairRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerLinkingPair> handle(CreatePlayerLinkingPairCommand command) {
@@ -39,6 +42,9 @@ public class PlayerLinkingPairCommandServiceImpl implements PlayerLinkingPairCom
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while saving PlayerLinkingPair: " + e.getMessage(), e);
         }
+
+        // Publish the event after saving
+        eventPublisher.publishEvent((new PlayerLinkingPairCreatedEvent(this, playerLinkingPair)));
 
         return Optional.of(playerLinkingPair);
     }

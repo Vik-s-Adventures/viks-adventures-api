@@ -6,10 +6,12 @@ import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerProgressCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerProgressCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerProgressCommand;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -38,6 +40,26 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
         }
 
         return Optional.of(playerProgress);
+    }
+
+    @Override
+    public Optional<PlayerProgress> handle(UpdatePlayerProgressCommand command, Long playerProgressId) {
+        Optional<PlayerProgress> optionalPlayerProgress = playerProgressRepository.findById(playerProgressId);
+        if (optionalPlayerProgress.isEmpty()) {
+            throw new IllegalArgumentException("Player progress with ID " + playerProgressId + " does not exist.");
+        }
+        PlayerProgress playerProgress = optionalPlayerProgress.get();
+        playerProgress.setCompleted(true);
+        playerProgress.setScore(playerProgress.getScore() + 1);
+        playerProgress.setLastAccessed(command.lastAccessed());
+
+        try {
+            playerProgressRepository.save(playerProgress);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while updating player progress: " + e.getMessage(), e);
+        }
+        return Optional.of(playerProgress);
+
     }
 
     @Override

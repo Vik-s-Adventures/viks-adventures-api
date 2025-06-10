@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Data
-@Table(name = "player_riddle_points")
+@Table(name = "player_riddle_answers")
 public class PlayerRiddleAnswer extends AuditableAbstractAggregateRoot<PlayerRiddleAnswer> {
     @ManyToOne
     @JoinColumn(name = "player_progress_id", nullable = false)

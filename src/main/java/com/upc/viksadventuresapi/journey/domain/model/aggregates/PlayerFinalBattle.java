@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Data
-@Table(name = "players")
+@Table(name = "players_final_battles")
 public class PlayerFinalBattle extends AuditableAbstractAggregateRoot<PlayerFinalBattle> {
     @ManyToOne
     @JoinColumn(name = "player_progress_id", nullable = false)

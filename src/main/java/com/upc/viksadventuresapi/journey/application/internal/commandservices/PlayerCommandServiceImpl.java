@@ -3,6 +3,7 @@ package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerCommand;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
 import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;
@@ -20,6 +21,7 @@ public class PlayerCommandServiceImpl implements PlayerCommandService {
 
     @Override
     public Optional<Player> handle(CreatePlayerCommand command) {
+
         Profile profile = profileRepository.findById(command.profileId())
                 .orElseThrow(() -> new IllegalArgumentException("Profile with ID " + command.profileId() + " does not exist."));
 
@@ -29,6 +31,21 @@ public class PlayerCommandServiceImpl implements PlayerCommandService {
             playerRepository.save(player);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while saving player: " + e.getMessage(), e);
+        }
+
+        return Optional.of(player);
+    }
+
+    @Override
+    public Optional<Player> handle(UpdatePlayerCommand command, Long playerId) {
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + playerId + " does not exist."));
+
+        player.setTotalScore(command.totalScore());
+        try {
+            playerRepository.save(player);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while updating player: " + e.getMessage(), e);
         }
 
         return Optional.of(player);

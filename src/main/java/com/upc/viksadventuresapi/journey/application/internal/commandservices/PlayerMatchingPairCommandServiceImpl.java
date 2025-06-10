@@ -6,10 +6,12 @@ import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerMatchingP
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerMatchingPairCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerMatchingPairCommand;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerMatchingPairCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerMatchingPairCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerMatchingPairRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +22,7 @@ public class PlayerMatchingPairCommandServiceImpl implements PlayerMatchingPairC
     private final PlayerMatchingPairRepository playerMatchingPairRepository;
     private final PlayerProgressRepository playerProgressRepository;
     private final MatchingItemRepository matchingItemRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerMatchingPair> handle(CreatePlayerMatchingPairCommand command) {
@@ -43,6 +46,9 @@ public class PlayerMatchingPairCommandServiceImpl implements PlayerMatchingPairC
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while saving PlayerMatchingPair: " + e.getMessage(), e);
         }
+
+        // Publish event after saving
+        eventPublisher.publishEvent(new PlayerMatchingPairCreatedEvent(this, playerMatchingPair));
 
         return Optional.of(playerMatchingPair);
     }
