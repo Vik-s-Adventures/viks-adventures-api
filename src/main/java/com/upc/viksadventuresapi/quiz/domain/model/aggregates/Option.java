@@ -47,7 +47,7 @@ public class Option extends AuditableAbstractAggregateRoot<Option> {
     }
 
     public Long getQuizId() {
-        return question.getQuizId();
+        return question.getQuiz().getId();
     }
 
     public Long getQuestionId() {
