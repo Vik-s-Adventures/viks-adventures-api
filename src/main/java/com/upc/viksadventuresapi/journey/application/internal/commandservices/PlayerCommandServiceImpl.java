@@ -20,19 +20,15 @@ public class PlayerCommandServiceImpl implements PlayerCommandService {
 
     @Override
     public Optional<Player> handle(CreatePlayerCommand command) {
-        Optional<Profile> optionalProfile = profileRepository.findById(command.profileId());
+        Profile profile = profileRepository.findById(command.profileId())
+                .orElseThrow(() -> new IllegalArgumentException("Profile with ID " + command.profileId() + " does not exist."));
 
-        if(optionalProfile.isEmpty()){
-            throw new IllegalArgumentException("Profile with ID " + command.profileId() + " does not exist.");
-        }
-
-        Profile profile = optionalProfile.get();
-        var player = new Player(profile, command);
+        Player player = new Player(profile, command);
 
         try {
             playerRepository.save(player);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving player: " + e.getMessage());
+            throw new IllegalArgumentException("Error while saving player: " + e.getMessage(), e);
         }
 
         return Optional.of(player);

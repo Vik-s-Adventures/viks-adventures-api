@@ -23,24 +23,18 @@ public class PlayerRiddleAnswerCommandServiceImpl implements PlayerRiddleAnswerC
 
     @Override
     public Optional<PlayerRiddleAnswer> handle(CreatePlayerRiddleAnswerCommand command) {
-        Optional<PlayerProgress> optionalPlayerProgress = playerProgressRepository.findById(command.playerProgressId());
-        if (optionalPlayerProgress.isEmpty()) {
-            throw new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist.");
-        }
+        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
+                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist."));
 
-        Optional<RiddleDetail> optionalRiddleDetail = riddleDetailRepository.findById(command.riddleDetailId());
-        if (optionalRiddleDetail.isEmpty()) {
-            throw new IllegalArgumentException("RiddleDetail with ID " + command.riddleDetailId() + " does not exist.");
-        }
+        RiddleDetail riddleDetail = riddleDetailRepository.findById(command.riddleDetailId())
+                .orElseThrow(() -> new IllegalArgumentException("RiddleDetail with ID " + command.riddleDetailId() + " does not exist."));
 
-        PlayerProgress playerProgress = optionalPlayerProgress.get();
-        RiddleDetail riddleDetail = optionalRiddleDetail.get();
         PlayerRiddleAnswer playerRiddleAnswer = new PlayerRiddleAnswer(playerProgress, riddleDetail, command);
 
         try {
             playerRiddleAnswerRepository.save(playerRiddleAnswer);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving PlayerRiddleAnswer: " + e.getMessage());
+            throw new IllegalArgumentException("Error while saving PlayerRiddleAnswer: " + e.getMessage(), e);
         }
 
         return Optional.of(playerRiddleAnswer);

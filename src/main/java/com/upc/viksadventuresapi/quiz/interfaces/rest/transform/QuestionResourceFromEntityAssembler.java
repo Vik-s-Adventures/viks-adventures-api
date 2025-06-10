@@ -5,6 +5,13 @@ import com.upc.viksadventuresapi.quiz.interfaces.rest.resources.QuestionResource
 
 public class QuestionResourceFromEntityAssembler {
     public static QuestionResource toResourceFromEntity(Question entity) {
-        return new QuestionResource(entity.getId(), entity.getQuizId(), entity.getPerformance(), entity.getQuestionText(), entity.getImageUrl());
+        return new QuestionResource(
+                entity.getId(),
+                entity.getQuiz().getId(),
+                entity.getPerformance().value(),
+                entity.getPerformance().description(),
+                entity.getQuestionText().questionText(),
+                entity.getImageUrl().imageUrl()
+        );
     }
 }
