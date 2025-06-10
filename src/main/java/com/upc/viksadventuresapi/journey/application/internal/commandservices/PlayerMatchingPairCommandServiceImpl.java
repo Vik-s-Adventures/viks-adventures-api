@@ -23,30 +23,25 @@ public class PlayerMatchingPairCommandServiceImpl implements PlayerMatchingPairC
 
     @Override
     public Optional<PlayerMatchingPair> handle(CreatePlayerMatchingPairCommand command) {
-        Optional<PlayerProgress> optionalPlayerProgress = playerProgressRepository.findById(command.playerProgressId());
+        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
+                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist."));
 
-        if (optionalPlayerProgress.isEmpty()) {
-            throw new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist.");
-        }
+        MatchingItem matchingItemA = matchingItemRepository.findById(command.matchingItemA())
+                .orElseThrow(() -> new IllegalArgumentException("MatchingItem A with ID " + command.matchingItemA() + " does not exist."));
 
-        Optional<MatchingItem> optionalMatchingItemA = matchingItemRepository.findById(command.matchingItemA());
-        Optional<MatchingItem> optionalMatchingItemB = matchingItemRepository.findById(command.matchingItemB());
-        if (optionalMatchingItemA.isEmpty() || optionalMatchingItemB.isEmpty()) {
-            throw new IllegalArgumentException("One or both MatchingItems do not exist.");
-        }
-        if (optionalMatchingItemA.get().getId().equals(optionalMatchingItemB.get().getId()) ) {
+        MatchingItem matchingItemB = matchingItemRepository.findById(command.matchingItemB())
+                .orElseThrow(() -> new IllegalArgumentException("MatchingItem B with ID " + command.matchingItemB() + " does not exist."));
+
+        if (matchingItemA.getId().equals(matchingItemB.getId())) {
             throw new IllegalArgumentException("Matching items cannot be the same.");
         }
 
-        PlayerProgress playerProgress = optionalPlayerProgress.get();
-        MatchingItem matchingItemA = optionalMatchingItemA.get();
-        MatchingItem matchingItemB = optionalMatchingItemB.get();
-        var playerMatchingPair = new PlayerMatchingPair(playerProgress, matchingItemA, matchingItemB, command);
+        PlayerMatchingPair playerMatchingPair = new PlayerMatchingPair(playerProgress, matchingItemA, matchingItemB);
 
         try {
             playerMatchingPairRepository.save(playerMatchingPair);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving PlayerMatchingPair: " + e.getMessage());
+            throw new IllegalArgumentException("Error while saving PlayerMatchingPair: " + e.getMessage(), e);
         }
 
         return Optional.of(playerMatchingPair);

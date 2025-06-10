@@ -23,31 +23,21 @@ public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCom
 
     @Override
     public Optional<PlayerFinalBattle> handle(CreatePlayerFinalBattleCommand command) {
-        Optional< PlayerProgress> optionalPlayerProgress = playerProgressRepository.findById(command.playerProgressId());
-        Optional<ObstacleOption> optionalObstacleOption = obstacleOptionRepository.findById(command.obstacleOptionId());
+        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
+                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist."));
 
-        var playerFinalBattle = getPlayerFinalBattle(command, optionalObstacleOption, optionalPlayerProgress);
+        ObstacleOption obstacleOption = obstacleOptionRepository.findById(command.obstacleOptionId())
+                .orElseThrow(() -> new IllegalArgumentException("ObstacleOption with ID " + command.obstacleOptionId() + " does not exist."));
+
+        PlayerFinalBattle playerFinalBattle = new PlayerFinalBattle(playerProgress, obstacleOption);
 
         try {
             playerFinalBattleRepository.save(playerFinalBattle);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving PlayerFinalBattle: " + e.getMessage());
+            throw new IllegalArgumentException("Error while saving PlayerFinalBattle: " + e.getMessage(), e);
         }
-        
+
         return Optional.of(playerFinalBattle);
-    }
-
-    private static PlayerFinalBattle getPlayerFinalBattle(CreatePlayerFinalBattleCommand command, Optional<ObstacleOption> optionalObstacleOption, Optional<PlayerProgress> optionalPlayerProgress) {
-        if (optionalObstacleOption.isEmpty()) {
-            throw new IllegalArgumentException("ObstacleOption with ID " + command.obstacleOptionId() + " does not exist.");
-        }
-        if (optionalPlayerProgress.isEmpty()) {
-            throw new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist.");
-        }
-
-        PlayerProgress playerProgress = optionalPlayerProgress.get();
-        ObstacleOption obstacleOption = optionalObstacleOption.get();
-        return new PlayerFinalBattle(playerProgress, obstacleOption, command);
     }
 
     @Override

@@ -1,9 +1,9 @@
 package com.upc.viksadventuresapi.journey.interfaces.rest.resources;
 
-public record PlayerMatchingPairResource(
+public record PlayerLinkingPairResource(
         Long id,
         Long playerProgressId,
-        Long matchingItemA,
-        Long matchingItemB
+        Long linkingPairImageId,
+        Long linkingPairAnswerId
 ) {
 }

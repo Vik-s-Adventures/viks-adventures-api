@@ -26,11 +26,4 @@ public class PlayerFinalBattle extends AuditableAbstractAggregateRoot<PlayerFina
     @ManyToOne
     @JoinColumn(name = "obstacle_option_id", nullable = false)
     private ObstacleOption obstacleOption;
-
-    public PlayerFinalBattle(PlayerProgress playerProgress, ObstacleOption obstacleOption, CreatePlayerFinalBattleCommand command) {
-        this(
-            playerProgress,
-            obstacleOption
-        );
-    }
 }
