@@ -9,6 +9,8 @@ import com.upc.viksadventuresapi.iam.domain.model.enums.AuthProvider;
 import com.upc.viksadventuresapi.iam.domain.services.UserCommandService;
 import com.upc.viksadventuresapi.iam.infrastructure.authorization.configuration.JwtService;
 import com.upc.viksadventuresapi.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerCommand;
+import com.upc.viksadventuresapi.journey.domain.services.PlayerCommandService;
 import com.upc.viksadventuresapi.profile.domain.model.commands.CreateProfileCommand;
 import com.upc.viksadventuresapi.profile.domain.services.ProfileCommandService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ProfileCommandService profileCommandService;
+    private final PlayerCommandService playerCommandService;
     private final JwtService jwtService;
 
     @Override
@@ -48,6 +51,9 @@ public class UserCommandServiceImpl implements UserCommandService {
         // Crear el perfil
         CreateProfileCommand createProfileCommand = new CreateProfileCommand(savedUser.getId());
         profileCommandService.handle(createProfileCommand);
+
+        CreatePlayerCommand createPlayerCommand = new CreatePlayerCommand(savedUser.getId(), 0);
+        playerCommandService.handle(createPlayerCommand);
 
         return Optional.of(savedUser);
     }

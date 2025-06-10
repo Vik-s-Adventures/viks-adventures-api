@@ -14,25 +14,20 @@ import com.upc.viksadventuresapi.quiz.domain.services.ResultCommandService;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.QuizRepository;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResponseRepository;
 import com.upc.viksadventuresapi.quiz.infrastructure.persistence.jpa.repositories.ResultRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
 @Service
+@RequiredArgsConstructor
 public class ResultCommandServiceImpl implements ResultCommandService {
     private final ResultRepository resultRepository;
     private final QuizRepository quizRepository;
     private final ProfileRepository profileRepository;
     private final ResponseRepository responseRepository;
     private final OptionQueryService optionQueryService;
-
-    public ResultCommandServiceImpl(ResultRepository resultRepository, QuizRepository quizRepository, ProfileRepository profileRepository, ResponseRepository responseRepository, OptionQueryService optionQueryService) {
-        this.resultRepository = resultRepository;
-        this.quizRepository = quizRepository;
-        this.profileRepository = profileRepository;
-        this.responseRepository = responseRepository;
-        this.optionQueryService = optionQueryService;
-    }
 
     @Override
     public Optional<Result> handle(CreateResultCommand command) {
