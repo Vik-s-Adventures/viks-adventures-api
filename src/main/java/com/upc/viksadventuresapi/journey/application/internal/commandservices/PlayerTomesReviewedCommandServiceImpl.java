@@ -23,24 +23,18 @@ public class PlayerTomesReviewedCommandServiceImpl implements PlayerTomesReviewe
 
     @Override
     public Optional<PlayerTomesReviewed> handle(CreatePlayerTomesReviewedCommand command) {
-        Optional<PlayerProgress> optionalPlayerProgress = playerProgressRepository.findById(command.playerProgressId());
-        if (optionalPlayerProgress.isEmpty()) {
-            throw new IllegalArgumentException("Player progress with ID " + command.playerProgressId() + " does not exist.");
-        }
+        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
+                .orElseThrow(() -> new IllegalArgumentException("Player progress with ID " + command.playerProgressId() + " does not exist."));
 
-        Optional<Concept> optionalConcept = conceptRepository.findById(command.conceptId());
-        if (optionalConcept.isEmpty()) {
-            throw new IllegalArgumentException("Concept with ID " + command.conceptId() + " does not exist.");
-        }
+        Concept concept = conceptRepository.findById(command.conceptId())
+                .orElseThrow(() -> new IllegalArgumentException("Concept with ID " + command.conceptId() + " does not exist."));
 
-        PlayerProgress playerProgress = optionalPlayerProgress.get();
-        Concept concept = optionalConcept.get();
         var playerTomesReviewed = new PlayerTomesReviewed(playerProgress, concept);
 
         try {
             playerTomesReviewedRepository.save(playerTomesReviewed);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving player tomes reviewed: " + e.getMessage());
+            throw new IllegalArgumentException("Error while saving player tomes reviewed: " + e.getMessage(), e);
         }
 
         return Optional.of(playerTomesReviewed);

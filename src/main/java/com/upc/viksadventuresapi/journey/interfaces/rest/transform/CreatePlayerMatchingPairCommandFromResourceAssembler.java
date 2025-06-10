@@ -8,8 +8,7 @@ public class CreatePlayerMatchingPairCommandFromResourceAssembler {
         return new CreatePlayerMatchingPairCommand(
                 resource.playerProgressId(),
                 resource.matchingItemA(),
-                resource.matchingItemB(),
-                resource.isMatched()
+                resource.matchingItemB()
         );
     }
 }

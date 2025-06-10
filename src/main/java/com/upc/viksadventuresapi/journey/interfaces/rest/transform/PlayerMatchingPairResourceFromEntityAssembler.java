@@ -9,8 +9,7 @@ public class PlayerMatchingPairResourceFromEntityAssembler {
                 entity.getId(),
                 entity.getPlayerProgress().getId(),
                 entity.getMatchingItemA().getId(),
-                entity.getMatchingItemB().getId(),
-                entity.getIsMatched()
+                entity.getMatchingItemB().getId()
         );
     }
 }

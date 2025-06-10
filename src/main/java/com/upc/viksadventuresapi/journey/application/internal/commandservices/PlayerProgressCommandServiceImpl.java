@@ -23,24 +23,18 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
 
     @Override
     public Optional<PlayerProgress> handle(CreatePlayerProgressCommand command) {
-        Optional<Player> optionalPlayer = playerRepository.findById(command.playerId());
-        if (optionalPlayer.isEmpty()) {
-            throw new IllegalArgumentException("Player with ID " + command.playerId() + " does not exist.");
-        }
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + command.playerId() + " does not exist."));
 
-        Optional<Level> optionalLevel = levelRepository.findById(command.levelId());
-        if (optionalLevel.isEmpty()) {
-            throw new IllegalArgumentException("Level with ID " + command.levelId() + " does not exist.");
-        }
+        Level level = levelRepository.findById(command.levelId())
+                .orElseThrow(() -> new IllegalArgumentException("Level with ID " + command.levelId() + " does not exist."));
 
-        Player player = optionalPlayer.get();
-        Level level = optionalLevel.get();
         PlayerProgress playerProgress = new PlayerProgress(player, level, command);
 
         try {
             playerProgressRepository.save(playerProgress);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving player progress: " + e.getMessage());
+            throw new IllegalArgumentException("Error while saving player progress: " + e.getMessage(), e);
         }
 
         return Optional.of(playerProgress);
