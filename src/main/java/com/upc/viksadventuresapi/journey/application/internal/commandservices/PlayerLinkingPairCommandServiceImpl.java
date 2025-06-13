@@ -18,7 +18,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,16 +44,10 @@ public class PlayerLinkingPairCommandServiceImpl implements PlayerLinkingPairCom
 
         // Create new PlayerLinkingPairs
         List<PlayerLinkingPair> newPairs = command.pairs().stream().map(req -> {
-
-            LinkingPair linkingPair = linkingPairRepository.findById(req.linkingPairId())
-                    .orElseThrow(() -> new IllegalArgumentException("LinkingPair not found"));
-
             LinkingPair linkingPairImage = linkingPairRepository.findById(req.linkingPairImageId())
                     .orElseThrow(() -> new IllegalArgumentException("LinkingPairImage not found"));
-
             LinkingPair linkingPairAnswer = linkingPairRepository.findById(req.linkingPairAnswerId())
                     .orElseThrow(() -> new IllegalArgumentException("LinkingPairAnswer not found"));
-
             return new PlayerLinkingPair(player, linkingPairImage, linkingPairAnswer);
         }).toList();
 

@@ -1,6 +1,5 @@
 package com.upc.viksadventuresapi.journey.domain.model.events;
 
-import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerLinkingPair;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerProgressCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.RecalculatePlayerProgressCommand;

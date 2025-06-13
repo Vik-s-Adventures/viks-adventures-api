@@ -9,7 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface PlayerRiddleAnswerRepository extends JpaRepository<PlayerRiddleAnswer, Long> {
-    List<PlayerRiddleAnswer> findAllByPlayerIdAndRiddleDetailRiddleTrialLevelId(Long playerId, Long levelId);
     List<PlayerRiddleAnswer> findAllByPlayerIdAndRiddleDetailRiddleId(Long playerId, Long riddleDetailId);
     Optional<PlayerRiddleAnswer> findByPlayerIdAndRiddleDetailId(Long playerId, Long riddleDetailId);
     boolean existsByPlayerIdAndRiddleDetailId(Long playerId, Long riddleDetailId);

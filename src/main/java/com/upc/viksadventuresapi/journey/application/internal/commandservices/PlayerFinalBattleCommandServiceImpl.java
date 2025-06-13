@@ -1,9 +1,7 @@
 package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 
-import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Obstacle;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.ObstacleOption;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.ObstacleOptionRepository;
-import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.ObstacleRepository;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerFinalBattle;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerFinalBattleCommand;
@@ -26,7 +24,6 @@ public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCom
     private final PlayerFinalBattleRepository playerFinalBattleRepository;
     private final PlayerRepository playerRepository;
     private final ObstacleOptionRepository obstacleOptionRepository;
-    private final ObstacleRepository obstacleRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -53,12 +50,6 @@ public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCom
 
     @Override
     public Optional<PlayerFinalBattle> handle(UpdatePlayerFinalBattleCommand command) {
-        Player player = playerRepository.findById(command.playerId())
-                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + command.playerId() + " does not exist."));
-
-        Obstacle obstacle = obstacleRepository.findById(command.obstacleId())
-                .orElseThrow(() -> new IllegalArgumentException("Obstacle with ID " + command.obstacleId() + " does not exist."));
-
         PlayerFinalBattle existing = playerFinalBattleRepository.findByPlayerIdAndObstacleOptionObstacleId(
                         command.playerId(), command.obstacleId())
                 .orElseThrow(() -> new IllegalArgumentException("No PlayerFinalBattle found for this player and obstacle."));

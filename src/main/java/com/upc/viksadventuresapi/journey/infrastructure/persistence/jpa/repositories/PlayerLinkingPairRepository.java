@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface PlayerLinkingPairRepository extends JpaRepository<PlayerLinkingPair, Long> {
-    List<PlayerLinkingPair> findAllByPlayerIdAndLinkingPairAnswerLinkingTrialLevelId(Long playerId, Long levelId);
     List<PlayerLinkingPair> findAllByPlayerIdAndLinkingPairAnswerLinkingId(Long playerId, Long linkingId);
 }

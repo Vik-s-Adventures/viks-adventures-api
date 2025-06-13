@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface PlayerMatchingPairRepository extends JpaRepository<PlayerMatchingPair, Long> {
-    List<PlayerMatchingPair> findAllByPlayerIdAndMatchingItemA_MatchingTrialLevelId(Long playerId, Long levelId);
-
     List<PlayerMatchingPair> findAllByPlayerIdAndMatchingItemA_MatchingId(Long id, Long id1);
 }

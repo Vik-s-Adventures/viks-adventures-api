@@ -9,9 +9,7 @@ import java.util.List;
 public class SavePlayerMatchingPairCommandFromResourceAssembler {
     public static SavePlayerMatchingResponseCommand toCommandFromResource(SavePlayerMatchingPairResource resource) {
         List<PlayerMatchingPairRequest> pairs = resource.pairs().stream()
-                .map(r -> {
-                    return new PlayerMatchingPairRequest(r.matchingItemAId(), r.matchingItemBId());
-                })
+                .map(r -> new PlayerMatchingPairRequest(r.matchingItemAId(), r.matchingItemBId()))
                 .toList();
 
         return new SavePlayerMatchingResponseCommand(
