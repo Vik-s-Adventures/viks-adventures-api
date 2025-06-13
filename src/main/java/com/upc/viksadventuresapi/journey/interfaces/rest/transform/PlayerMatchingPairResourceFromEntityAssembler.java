@@ -7,7 +7,8 @@ public class PlayerMatchingPairResourceFromEntityAssembler {
     public static PlayerMatchingPairResource toResourceFromEntity(PlayerMatchingPair entity) {
         return new PlayerMatchingPairResource(
                 entity.getId(),
-                entity.getPlayerProgress().getId(),
+                entity.getPlayer().getId(),
+                entity.getMatchingItemA().getMatching().getId(),
                 entity.getMatchingItemA().getId(),
                 entity.getMatchingItemB().getId()
         );

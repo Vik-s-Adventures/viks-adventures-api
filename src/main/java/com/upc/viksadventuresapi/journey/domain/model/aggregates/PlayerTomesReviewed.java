@@ -16,8 +16,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "player_tomes_reviewed")
 public class PlayerTomesReviewed extends AuditableAbstractAggregateRoot<PlayerTomesReviewed> {
     @ManyToOne
-    @JoinColumn(name = "player_progress_id", nullable = false)
-    private PlayerProgress playerProgress;
+    @JoinColumn(name = "player_id", nullable = false)
+    private Player player;
 
     @ManyToOne
     @JoinColumn(name = "concept_id", nullable = false)

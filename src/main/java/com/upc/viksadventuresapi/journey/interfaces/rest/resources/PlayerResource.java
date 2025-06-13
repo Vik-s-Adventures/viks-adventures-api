@@ -4,5 +4,4 @@ public record PlayerResource(
         Long id,
         Long profileId,
         Integer totalScore
-) {
-}
+) {}

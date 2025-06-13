@@ -1,7 +1,7 @@
 package com.upc.viksadventuresapi.journey.interfaces.rest.resources;
 
 public record CreatePlayerRiddleAnswerResource(
-        Long playerProgressId,
+        Long playerId,
         Long riddleDetailId,
         String enteredAnswer
 ) {

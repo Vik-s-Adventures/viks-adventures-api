@@ -3,7 +3,7 @@ package com.upc.viksadventuresapi.journey.domain.model.events;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerFinalBattle;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerProgressCommand;
-import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerProgressCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.RecalculatePlayerProgressCommand;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,26 +24,35 @@ public class PlayerFinalBattleEventListener {
     public void handlePlayerFinalBattleCreated(PlayerFinalBattleCreatedEvent event) {
         PlayerFinalBattle playerFinalBattle = event.getPlayerFinalBattle();
 
-        Long playerId = playerFinalBattle.getPlayerProgress().getPlayer().getId();
-        Long levelId = playerFinalBattle.getPlayerProgress().getLevel().getId();
-        LocalDateTime now = LocalDateTime.now();
+        Long playerId = playerFinalBattle.getPlayer().getId();
+        Long levelId = playerFinalBattle.getObstacleOption().getObstacle().getFinalBattle().getLevel().getId();
 
-        Boolean isCorrect = playerFinalBattle.getObstacleOption().getIsCorrect();
-        int scoreToAdd = isCorrect ? 20 : 0;
-
+        // Check if PlayerProgress already exists for this player and level
         Optional<PlayerProgress> existingProgress = playerProgressRepository.findByPlayerIdAndLevelId(playerId, levelId);
 
-        if (existingProgress.isPresent()) {
-            PlayerProgress progress = existingProgress.get();
-            int updatedScore = progress.getScore() + scoreToAdd;
+        if (existingProgress.isEmpty()) {
+            // If no PlayerProgress exists, create a new one
             playerProgressCommandService.handle(
-                    new UpdatePlayerProgressCommand(false, updatedScore, now),
-                    progress.getId()
-            );
-        } else {
-            playerProgressCommandService.handle(
-                    new CreatePlayerProgressCommand(playerId, levelId, false, scoreToAdd, now)
+                    new CreatePlayerProgressCommand(playerId, levelId, false, 0, LocalDateTime.now())
             );
         }
+
+        // Recalculate the player's progress
+        playerProgressCommandService.handle(
+                new RecalculatePlayerProgressCommand(playerId, levelId)
+        );
+    }
+
+    @EventListener
+    public void handlePlayerFinalBattleUpdated(PlayerFinalBattleUpdatedEvent event) {
+        PlayerFinalBattle playerFinalBattle = event.getPlayerFinalBattle();
+
+        Long playerId = playerFinalBattle.getPlayer().getId();
+        Long levelId = playerFinalBattle.getObstacleOption().getObstacle().getFinalBattle().getLevel().getId();
+
+        // Recalculate the player's progress after the final battle is updated
+        playerProgressCommandService.handle(
+                new RecalculatePlayerProgressCommand(playerId, levelId)
+        );
     }
 }

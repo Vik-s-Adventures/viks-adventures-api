@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MatchingRepository extends JpaRepository<Matching, Long> {
     List<Matching>  findByTrialId(Long trialId);
+    List<Matching> findByTrialLevelId(Long levelId);
 }

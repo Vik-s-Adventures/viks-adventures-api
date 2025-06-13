@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface LinkingRepository extends JpaRepository<Linking, Long> {
     List<Linking> findByTrialId(Long trialId);
+
+    List<Linking> findByTrialLevelId(Long levelId);
 }

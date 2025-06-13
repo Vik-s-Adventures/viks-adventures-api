@@ -3,7 +3,7 @@ package com.upc.viksadventuresapi.journey.domain.model.events;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerRiddleAnswer;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerProgressCommand;
-import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerProgressCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.RecalculatePlayerProgressCommand;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,38 +23,23 @@ public class PlayerRiddleAnswersEventListener {
     @EventListener
     public void handlePlayerRiddleAnswerCreated(PlayerRiddleAnswerCreatedEvent event) {
         PlayerRiddleAnswer playerRiddleAnswer = event.getPlayerRiddleAnswer();
-        PlayerProgress currentProgress = playerRiddleAnswer.getPlayerProgress();
 
-        Long playerId = currentProgress.getPlayer().getId();
-        Long levelId = currentProgress.getLevel().getId();
+        Long playerId = playerRiddleAnswer.getPlayer().getId();
+        Long levelId = playerRiddleAnswer.getRiddleDetail().getRiddle().getTrial().getLevel().getId();
 
+        // Verify if the player progress already exists for this level
         Optional<PlayerProgress> existingProgressOpt = playerProgressRepository.findByPlayerIdAndLevelId(playerId, levelId);
 
-        String entered = playerRiddleAnswer.getEnteredAnswer().enteredAnswer().trim().toLowerCase();
-        String correct = playerRiddleAnswer.getRiddleDetail().getAnswer().answer().trim().toLowerCase();
-
-        int scoreToAdd = entered.equals(correct) ? 10 : 0;
-
-        if (existingProgressOpt.isPresent()) {
-            PlayerProgress existingProgress = existingProgressOpt.get();
+        if (existingProgressOpt.isEmpty()) {
+            // If not, create a new player progress entry
             playerProgressCommandService.handle(
-                    new UpdatePlayerProgressCommand(
-                            true,
-                            existingProgress.getScore() + scoreToAdd,
-                            LocalDateTime.now()
-                    ),
-                    existingProgress.getId()
-            );
-        } else {
-            playerProgressCommandService.handle(
-                    new CreatePlayerProgressCommand(
-                            playerId,
-                            levelId,
-                            true,
-                            scoreToAdd,
-                            LocalDateTime.now()
-                    )
+                    new CreatePlayerProgressCommand(playerId, levelId, false, 0, LocalDateTime.now())
             );
         }
+
+        // Recalculate the player progress based on the riddle answer
+        playerProgressCommandService.handle(
+                new RecalculatePlayerProgressCommand(playerId, levelId)
+        );
     }
 }

@@ -1,7 +1,7 @@
 package com.upc.viksadventuresapi.journey.domain.model.commands;
 
 public record CreatePlayerRiddleAnswerCommand(
-        Long playerProgressId,
+        Long playerId,
         Long riddleDetailId,
         String enteredAnswer
 ) {

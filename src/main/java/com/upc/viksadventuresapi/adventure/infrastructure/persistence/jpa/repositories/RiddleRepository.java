@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface RiddleRepository extends JpaRepository<Riddle, Long> {
     List<Riddle> findByTrialId(Long trialId);
+    List<Riddle> findByTrialLevelId(Long levelId);
 }
