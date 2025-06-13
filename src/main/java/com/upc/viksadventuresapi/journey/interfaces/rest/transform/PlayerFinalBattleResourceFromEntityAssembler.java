@@ -7,7 +7,7 @@ public class PlayerFinalBattleResourceFromEntityAssembler {
     public static PlayerFinalBattleResource toResourceFromEntity(PlayerFinalBattle entity) {
         return new PlayerFinalBattleResource(
                 entity.getId(),
-                entity.getPlayerProgress().getId(),
+                entity.getPlayer().getId(),
                 entity.getObstacleOption().getId()
         );
     }

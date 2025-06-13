@@ -1,7 +1,6 @@
 package com.upc.viksadventuresapi.journey.domain.model.aggregates;
 
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.MatchingItem;
-import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerMatchingPairCommand;
 import com.upc.viksadventuresapi.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -20,8 +19,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "player_matching_pairs")
 public class PlayerMatchingPair extends AuditableAbstractAggregateRoot<PlayerMatchingPair> {
     @ManyToOne
-    @JoinColumn(name = "player_progress_id", nullable = false)
-    private PlayerProgress playerProgress;
+    @JoinColumn(name = "player_id", nullable = false)
+    private Player player;
 
     @ManyToOne
     @JoinColumn(name = "matching_item_a_id", nullable = false)

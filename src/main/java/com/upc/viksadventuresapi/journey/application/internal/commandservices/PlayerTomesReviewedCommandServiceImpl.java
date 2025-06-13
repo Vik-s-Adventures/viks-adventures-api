@@ -3,7 +3,7 @@ package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Concept;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Tome;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.ConceptRepository;
-import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
+import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerTomesReviewed;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerTomesReviewedCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerTomesReviewedCommand;
@@ -11,7 +11,7 @@ import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerTomes
 import com.upc.viksadventuresapi.journey.domain.model.events.PlayerTomesReviewedCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.model.events.PlayerTomesReviewedUpdatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerTomesReviewedCommandService;
-import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
+import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerTomesReviewedRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,19 +23,19 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PlayerTomesReviewedCommandServiceImpl implements PlayerTomesReviewedCommandService {
     private final PlayerTomesReviewedRepository playerTomesReviewedRepository;
-    private final PlayerProgressRepository playerProgressRepository;
+    private final PlayerRepository playerRepository;
     private final ConceptRepository conceptRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerTomesReviewed> handle(CreatePlayerTomesReviewedCommand command) {
-        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
-                .orElseThrow(() -> new IllegalArgumentException("Player progress with ID " + command.playerProgressId() + " does not exist."));
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player progress with ID " + command.playerId() + " does not exist."));
 
         Concept concept = conceptRepository.findById(command.conceptId())
                 .orElseThrow(() -> new IllegalArgumentException("Concept with ID " + command.conceptId() + " does not exist."));
 
-        var playerTomesReviewed = new PlayerTomesReviewed(playerProgress, concept);
+        var playerTomesReviewed = new PlayerTomesReviewed(player, concept);
 
         try {
             playerTomesReviewedRepository.save(playerTomesReviewed);
@@ -51,8 +51,8 @@ public class PlayerTomesReviewedCommandServiceImpl implements PlayerTomesReviewe
 
     @Override
     public Optional<PlayerTomesReviewed> handle(UpdatePlayerTomesReviewedCommand command) {
-        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
-                .orElseThrow(() -> new IllegalArgumentException("Player progress with ID " + command.playerProgressId() + " does not exist."));
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player progress with ID " + command.playerId() + " does not exist."));
 
         Concept newConcept = conceptRepository.findById(command.conceptId())
                 .orElseThrow(() -> new IllegalArgumentException("Concept with ID " + command.conceptId() + " does not exist."));
@@ -60,7 +60,7 @@ public class PlayerTomesReviewedCommandServiceImpl implements PlayerTomesReviewe
         Tome tome = newConcept.getTome();
 
         PlayerTomesReviewed existing = playerTomesReviewedRepository
-                .findByPlayerProgressAndConcept_Tome(playerProgress, tome)
+                .findByPlayerAndConcept_Tome(player, tome)
                 .orElseThrow(() -> new IllegalArgumentException("No PlayerTomesReviewed found for this progress and tome."));
 
         // Actualiza el concept (si no es el mismo)

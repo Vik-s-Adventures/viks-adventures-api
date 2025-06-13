@@ -7,7 +7,7 @@ public class PlayerRiddleAnswerResourceFromEntityAssembler {
     public static PlayerRiddleAnswerResource toResourceFromEntity(PlayerRiddleAnswer entity){
         return new PlayerRiddleAnswerResource(
                 entity.getId(),
-                entity.getPlayerProgress().getId(),
+                entity.getPlayer().getId(),
                 entity.getRiddleDetail().getId(),
                 entity.getEnteredAnswer().enteredAnswer()
         );

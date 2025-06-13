@@ -4,6 +4,10 @@ import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerLinkingPa
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PlayerLinkingPairRepository extends JpaRepository<PlayerLinkingPair, Long> {
+    List<PlayerLinkingPair> findAllByPlayerIdAndLinkingPairAnswerLinkingTrialLevelId(Long playerId, Long levelId);
+    List<PlayerLinkingPair> findAllByPlayerIdAndLinkingPairAnswerLinkingId(Long playerId, Long linkingId);
 }

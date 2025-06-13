@@ -6,8 +6,10 @@ import com.upc.viksadventuresapi.journey.domain.services.PlayerFinalBattleComman
 import com.upc.viksadventuresapi.journey.domain.services.PlayerFinalBattleQueryService;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.CreatePlayerFinalBattleResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.PlayerFinalBattleResource;
+import com.upc.viksadventuresapi.journey.interfaces.rest.resources.UpdatePlayerFinalBattleResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.CreatePlayerFinalBattleCommandFromResourceAssembler;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.PlayerFinalBattleResourceFromEntityAssembler;
+import com.upc.viksadventuresapi.journey.interfaces.rest.transform.UpdatePlayerFinalBattleCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,6 +32,15 @@ public class PlayerFinalBattleController {
         if (result.isEmpty()) return ResponseEntity.badRequest().build();
         var response = PlayerFinalBattleResourceFromEntityAssembler.toResourceFromEntity(result.get());
         return ResponseEntity.status(201).body(response);
+    }
+
+    @PutMapping
+    public ResponseEntity<PlayerFinalBattleResource> updatePlayerFinalBattle(@RequestBody UpdatePlayerFinalBattleResource resource) {
+        var command = UpdatePlayerFinalBattleCommandFromResourceAssembler.toCommandFromResource(resource);
+        var result = commandService.handle(command);
+        if (result.isEmpty()) return ResponseEntity.badRequest().build();
+        var response = PlayerFinalBattleResourceFromEntityAssembler.toResourceFromEntity(result.get());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

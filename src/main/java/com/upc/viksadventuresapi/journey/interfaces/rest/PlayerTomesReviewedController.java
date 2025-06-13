@@ -6,8 +6,10 @@ import com.upc.viksadventuresapi.journey.domain.services.PlayerTomesReviewedComm
 import com.upc.viksadventuresapi.journey.domain.services.PlayerTomesReviewedQueryService;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.CreatePlayerTomesReviewedResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.PlayerTomesReviewedResource;
+import com.upc.viksadventuresapi.journey.interfaces.rest.resources.UpdatePlayerTomesReviewedResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.CreatePlayerTomesReviewedCommandFromResourceAssembler;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.PlayerTomesReviewedResourceFromEntityAssembler;
+import com.upc.viksadventuresapi.journey.interfaces.rest.transform.UpdatePlayerTomesReviewedCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,6 +32,15 @@ public class PlayerTomesReviewedController {
         if (result.isEmpty()) return ResponseEntity.badRequest().build();
         var response = PlayerTomesReviewedResourceFromEntityAssembler.toResourceFromEntity(result.get());
         return ResponseEntity.status(201).body(response);
+    }
+
+    @PutMapping
+    public ResponseEntity<PlayerTomesReviewedResource> updatePlayerTomesReviewed(@RequestBody UpdatePlayerTomesReviewedResource resource) {
+        var command = UpdatePlayerTomesReviewedCommandFromResourceAssembler.toCommandFromResource(resource);
+        var result = commandService.handle(command);
+        if (result.isEmpty()) return ResponseEntity.badRequest().build();
+        var response = PlayerTomesReviewedResourceFromEntityAssembler.toResourceFromEntity(result.get());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

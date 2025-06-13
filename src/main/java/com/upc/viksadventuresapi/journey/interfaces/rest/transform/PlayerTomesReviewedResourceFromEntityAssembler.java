@@ -7,7 +7,7 @@ public class PlayerTomesReviewedResourceFromEntityAssembler {
     public static PlayerTomesReviewedResource toResourceFromEntity(PlayerTomesReviewed entity){
         return new PlayerTomesReviewedResource(
                 entity.getId(),
-                entity.getPlayerProgress().getId(),
+                entity.getPlayer().getId(),
                 entity.getConcept().getId()
         );
     }
