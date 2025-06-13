@@ -9,5 +9,4 @@ public record PlayerProgressResource(
         Boolean completed,
         Integer score,
         LocalDateTime lastAccessed
-) {
-}
+) {}

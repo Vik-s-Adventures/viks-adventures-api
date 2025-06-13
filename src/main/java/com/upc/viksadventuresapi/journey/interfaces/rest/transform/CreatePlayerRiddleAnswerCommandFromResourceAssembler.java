@@ -6,7 +6,7 @@ import com.upc.viksadventuresapi.journey.interfaces.rest.resources.CreatePlayerR
 public class CreatePlayerRiddleAnswerCommandFromResourceAssembler {
     public static CreatePlayerRiddleAnswerCommand toCommandFromResource(CreatePlayerRiddleAnswerResource resource) {
         return new CreatePlayerRiddleAnswerCommand(
-                resource.playerProgressId(),
+                resource.playerId(),
                 resource.riddleDetailId(),
                 resource.enteredAnswer()
         );

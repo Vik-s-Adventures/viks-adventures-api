@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "players_linking_pairs")
 public class PlayerLinkingPair extends AuditableAbstractAggregateRoot <PlayerLinkingPair> {
     @ManyToOne
-    @JoinColumn(name = "player_progress_id", nullable = false)
-    private PlayerProgress playerProgress;
+    @JoinColumn(name = "player_id", nullable = false)
+    private Player player;
 
     @ManyToOne
     @JoinColumn(name = "linking_pair_id_image", nullable = false)

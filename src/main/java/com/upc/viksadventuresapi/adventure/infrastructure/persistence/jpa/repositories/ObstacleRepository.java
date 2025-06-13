@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ObstacleRepository extends JpaRepository<Obstacle, Long> {
     List<Obstacle> findByFinalBattleId(Long finalBattleId);
+    List<Obstacle> findByFinalBattleLevelId(Long levelId);
 }

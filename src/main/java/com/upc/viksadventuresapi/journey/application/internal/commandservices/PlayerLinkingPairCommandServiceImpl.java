@@ -1,52 +1,60 @@
 package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 
+import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Linking;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.LinkingPair;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.LinkingPairRepository;
+import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.LinkingRepository;
+import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerLinkingPair;
-import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
-import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerLinkingPairCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerLinkingPairCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.SavePlayerLinkingResponseCommand;
 import com.upc.viksadventuresapi.journey.domain.model.events.PlayerLinkingPairCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerLinkingPairCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerLinkingPairRepository;
-import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
+import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PlayerLinkingPairCommandServiceImpl implements PlayerLinkingPairCommandService {
     private final PlayerLinkingPairRepository playerLinkingPairRepository;
-    private final PlayerProgressRepository playerProgressRepository;
+    private final PlayerRepository playerRepository;
+    private final LinkingRepository linkingRepository;
     private final LinkingPairRepository linkingPairRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public Optional<PlayerLinkingPair> handle(CreatePlayerLinkingPairCommand command) {
-        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
-                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist."));
+    @Transactional
+    public void handle(SavePlayerLinkingResponseCommand command) {
 
-        LinkingPair linkingPairImage = linkingPairRepository.findById(command.linkingPairImageId())
-                .orElseThrow(() -> new IllegalArgumentException("LinkingPair image ID does not exist."));
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
 
-        LinkingPair linkingPairAnswer = linkingPairRepository.findById(command.linkingPairAnswerId())
-                .orElseThrow(() -> new IllegalArgumentException("LinkingPair answer ID does not exist."));
+        Linking linking = linkingRepository.findById(command.linkingId())
+                .orElseThrow(() -> new IllegalArgumentException("Linking not found"));
 
-        PlayerLinkingPair playerLinkingPair = new PlayerLinkingPair(playerProgress, linkingPairImage, linkingPairAnswer);
+        // Delete existing PlayerLinkingPairs for the player and linking
+        List<PlayerLinkingPair> existingPairs = playerLinkingPairRepository.findAllByPlayerIdAndLinkingPairAnswerLinkingId(player.getId(), linking.getId());
+        playerLinkingPairRepository.deleteAll(existingPairs);
 
-        try {
-            playerLinkingPairRepository.save(playerLinkingPair);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving PlayerLinkingPair: " + e.getMessage(), e);
-        }
+        // Create new PlayerLinkingPairs
+        List<PlayerLinkingPair> newPairs = command.pairs().stream().map(req -> {
+            LinkingPair linkingPairImage = linkingPairRepository.findById(req.linkingPairImageId())
+                    .orElseThrow(() -> new IllegalArgumentException("LinkingPairImage not found"));
+            LinkingPair linkingPairAnswer = linkingPairRepository.findById(req.linkingPairAnswerId())
+                    .orElseThrow(() -> new IllegalArgumentException("LinkingPairAnswer not found"));
+            return new PlayerLinkingPair(player, linkingPairImage, linkingPairAnswer);
+        }).toList();
 
-        // Publish the event after saving
-        eventPublisher.publishEvent((new PlayerLinkingPairCreatedEvent(this, playerLinkingPair)));
+        playerLinkingPairRepository.saveAll(newPairs);
 
-        return Optional.of(playerLinkingPair);
+        // Publish event for each new PlayerLinkingPair created
+        eventPublisher.publishEvent(new PlayerLinkingPairCreatedEvent(this, player, linking));
     }
 
     @Override

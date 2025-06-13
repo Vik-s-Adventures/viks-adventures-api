@@ -1,16 +1,19 @@
 package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
+import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerCommand;
-import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerTotalScoreCommand;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerCommandService;
+import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
 import com.upc.viksadventuresapi.profile.domain.model.aggregates.Profile;
 import com.upc.viksadventuresapi.profile.infrastructure.persistence.jpa.repositories.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,6 +21,7 @@ import java.util.Optional;
 public class PlayerCommandServiceImpl implements PlayerCommandService {
     private final ProfileRepository profileRepository;
     private final PlayerRepository playerRepository;
+    private final PlayerProgressRepository playerProgressRepository;
 
     @Override
     public Optional<Player> handle(CreatePlayerCommand command) {
@@ -37,18 +41,18 @@ public class PlayerCommandServiceImpl implements PlayerCommandService {
     }
 
     @Override
-    public Optional<Player> handle(UpdatePlayerCommand command, Long playerId) {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + playerId + " does not exist."));
+    public void handle(UpdatePlayerTotalScoreCommand command) {
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + command.playerId() + " does not exist."));
 
-        player.setTotalScore(command.totalScore());
-        try {
-            playerRepository.save(player);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while updating player: " + e.getMessage(), e);
-        }
+        List<PlayerProgress> progresses = playerProgressRepository.findAllByPlayerId(command.playerId());
 
-        return Optional.of(player);
+        int totalScore = progresses.stream()
+                .mapToInt(PlayerProgress::getScore)
+                .sum();
+
+        player.setTotalScore(totalScore);
+        playerRepository.save(player);
     }
 
     @Override

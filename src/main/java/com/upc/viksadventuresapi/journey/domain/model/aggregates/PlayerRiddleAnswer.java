@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "player_riddle_answers")
 public class PlayerRiddleAnswer extends AuditableAbstractAggregateRoot<PlayerRiddleAnswer> {
     @ManyToOne
-    @JoinColumn(name = "player_progress_id", nullable = false)
-    private PlayerProgress playerProgress;
+    @JoinColumn(name = "player_id", nullable = false)
+    private Player player;
 
     @ManyToOne
     @JoinColumn(name = "riddle_detail_id", nullable = false)
@@ -28,9 +28,9 @@ public class PlayerRiddleAnswer extends AuditableAbstractAggregateRoot<PlayerRid
     @Embedded
     private EnteredAnswer enteredAnswer;
 
-    public PlayerRiddleAnswer(PlayerProgress playerProgress, RiddleDetail riddleDetail, CreatePlayerRiddleAnswerCommand command) {
+    public PlayerRiddleAnswer(Player player, RiddleDetail riddleDetail, CreatePlayerRiddleAnswerCommand command) {
         this(
-            playerProgress,
+            player,
             riddleDetail,
             new EnteredAnswer(command.enteredAnswer())
         );

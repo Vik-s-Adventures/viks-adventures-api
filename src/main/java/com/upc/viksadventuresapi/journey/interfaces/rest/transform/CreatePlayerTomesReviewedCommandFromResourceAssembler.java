@@ -6,7 +6,7 @@ import com.upc.viksadventuresapi.journey.interfaces.rest.resources.CreatePlayerT
 public class CreatePlayerTomesReviewedCommandFromResourceAssembler {
     public static CreatePlayerTomesReviewedCommand toCommandFromResource(CreatePlayerTomesReviewedResource resource) {
         return new CreatePlayerTomesReviewedCommand(
-                resource.playerProgressId(),
+                resource.playerId(),
                 resource.conceptId()
         );
     }

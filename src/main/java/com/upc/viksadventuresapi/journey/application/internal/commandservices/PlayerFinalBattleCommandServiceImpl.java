@@ -2,14 +2,16 @@ package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.ObstacleOption;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.ObstacleOptionRepository;
+import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerFinalBattle;
-import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerFinalBattleCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerFinalBattleCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.UpdatePlayerFinalBattleCommand;
 import com.upc.viksadventuresapi.journey.domain.model.events.PlayerFinalBattleCreatedEvent;
+import com.upc.viksadventuresapi.journey.domain.model.events.PlayerFinalBattleUpdatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerFinalBattleCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerFinalBattleRepository;
-import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
+import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -20,19 +22,19 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCommandService {
     private final PlayerFinalBattleRepository playerFinalBattleRepository;
-    private final PlayerProgressRepository playerProgressRepository;
+    private final PlayerRepository playerRepository;
     private final ObstacleOptionRepository obstacleOptionRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<PlayerFinalBattle> handle(CreatePlayerFinalBattleCommand command) {
-        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
-                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist."));
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerId() + " does not exist."));
 
         ObstacleOption obstacleOption = obstacleOptionRepository.findById(command.obstacleOptionId())
                 .orElseThrow(() -> new IllegalArgumentException("ObstacleOption with ID " + command.obstacleOptionId() + " does not exist."));
 
-        PlayerFinalBattle playerFinalBattle = new PlayerFinalBattle(playerProgress, obstacleOption);
+        PlayerFinalBattle playerFinalBattle = new PlayerFinalBattle(player, obstacleOption);
 
         try {
             playerFinalBattleRepository.save(playerFinalBattle);
@@ -44,6 +46,24 @@ public class PlayerFinalBattleCommandServiceImpl implements PlayerFinalBattleCom
         eventPublisher.publishEvent(new PlayerFinalBattleCreatedEvent(this, playerFinalBattle));
 
         return Optional.of(playerFinalBattle);
+    }
+
+    @Override
+    public Optional<PlayerFinalBattle> handle(UpdatePlayerFinalBattleCommand command) {
+        PlayerFinalBattle existing = playerFinalBattleRepository.findByPlayerIdAndObstacleOptionObstacleId(
+                        command.playerId(), command.obstacleId())
+                .orElseThrow(() -> new IllegalArgumentException("No PlayerFinalBattle found for this player and obstacle."));
+
+        ObstacleOption newObstacleOption = obstacleOptionRepository.findById(command.newObstacleOptionId())
+                .orElseThrow(() -> new IllegalArgumentException("ObstacleOption with ID " + command.newObstacleOptionId() + " does not exist."));
+
+        if (!existing.getObstacleOption().getId().equals(newObstacleOption.getId())) {
+            existing.setObstacleOption(newObstacleOption);
+            playerFinalBattleRepository.save(existing);
+            eventPublisher.publishEvent(new PlayerFinalBattleUpdatedEvent(this, existing));
+        }
+
+        return Optional.of(existing);
     }
 
     @Override

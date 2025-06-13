@@ -1,56 +1,66 @@
 package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 
+import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Matching;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.MatchingItem;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.MatchingItemRepository;
+import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.MatchingRepository;
+import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerMatchingPair;
-import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
-import com.upc.viksadventuresapi.journey.domain.model.commands.CreatePlayerMatchingPairCommand;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerMatchingPairCommand;
+import com.upc.viksadventuresapi.journey.domain.model.commands.SavePlayerMatchingResponseCommand;
 import com.upc.viksadventuresapi.journey.domain.model.events.PlayerMatchingPairCreatedEvent;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerMatchingPairCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerMatchingPairRepository;
-import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
+import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PlayerMatchingPairCommandServiceImpl implements PlayerMatchingPairCommandService {
     private final PlayerMatchingPairRepository playerMatchingPairRepository;
-    private final PlayerProgressRepository playerProgressRepository;
+    private final PlayerRepository playerRepository;
     private final MatchingItemRepository matchingItemRepository;
+    private final MatchingRepository matchingRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public Optional<PlayerMatchingPair> handle(CreatePlayerMatchingPairCommand command) {
-        PlayerProgress playerProgress = playerProgressRepository.findById(command.playerProgressId())
-                .orElseThrow(() -> new IllegalArgumentException("PlayerProgress with ID " + command.playerProgressId() + " does not exist."));
+    @Transactional
+    public void handle(SavePlayerMatchingResponseCommand command) {
 
-        MatchingItem matchingItemA = matchingItemRepository.findById(command.matchingItemA())
-                .orElseThrow(() -> new IllegalArgumentException("MatchingItem A with ID " + command.matchingItemA() + " does not exist."));
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
 
-        MatchingItem matchingItemB = matchingItemRepository.findById(command.matchingItemB())
-                .orElseThrow(() -> new IllegalArgumentException("MatchingItem B with ID " + command.matchingItemB() + " does not exist."));
+        Matching matching = matchingRepository.findById(command.matchingId())
+                .orElseThrow(() -> new IllegalArgumentException("Matching not found"));
 
-        if (matchingItemA.getId().equals(matchingItemB.getId())) {
-            throw new IllegalArgumentException("Matching items cannot be the same.");
-        }
+        // Eliminar respuestas previas para este player + matching
+        List<PlayerMatchingPair> existingPairs =
+                playerMatchingPairRepository.findAllByPlayerIdAndMatchingItemA_MatchingId(player.getId(), matching.getId());
+        playerMatchingPairRepository.deleteAll(existingPairs);
 
-        PlayerMatchingPair playerMatchingPair = new PlayerMatchingPair(playerProgress, matchingItemA, matchingItemB);
+        // Validar y crear nuevos pares
+        List<PlayerMatchingPair> newPairs = command.pairs().stream().map(req -> {
+            MatchingItem itemA = matchingItemRepository.findById(req.matchingItemAId())
+                    .orElseThrow(() -> new IllegalArgumentException("MatchingItem A not found"));
+            MatchingItem itemB = matchingItemRepository.findById(req.matchingItemBId())
+                    .orElseThrow(() -> new IllegalArgumentException("MatchingItem B not found"));
 
-        try {
-            playerMatchingPairRepository.save(playerMatchingPair);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while saving PlayerMatchingPair: " + e.getMessage(), e);
-        }
+            if (itemA.getId().equals(itemB.getId())) {
+                throw new IllegalArgumentException("Items cannot be paired with themselves");
+            }
 
-        // Publish event after saving
-        eventPublisher.publishEvent(new PlayerMatchingPairCreatedEvent(this, playerMatchingPair));
+            return new PlayerMatchingPair(player, itemA, itemB);
+        }).toList();
 
-        return Optional.of(playerMatchingPair);
+        playerMatchingPairRepository.saveAll(newPairs);
+
+        // Publicar evento para recalcular progreso
+        eventPublisher.publishEvent(new PlayerMatchingPairCreatedEvent(this, player, matching));
     }
 
     @Override

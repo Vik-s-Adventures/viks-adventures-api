@@ -7,7 +7,7 @@ public class PlayerLinkingPairResourceFromEntityAssembler {
     public static PlayerLinkingPairResource toResourceFromEntity(PlayerLinkingPair entity) {
         return new PlayerLinkingPairResource(
                 entity.getId(),
-                entity.getPlayerProgress().getId(),
+                entity.getPlayer().getId(),
                 entity.getLinkingPairImage().getId(),
                 entity.getLinkingPairAnswer().getId()
         );

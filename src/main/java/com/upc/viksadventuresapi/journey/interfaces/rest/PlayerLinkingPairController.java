@@ -4,8 +4,8 @@ import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerLinki
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetPlayerLinkingPairByIdQuery;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerLinkingPairCommandService;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerLinkingPairQueryService;
-import com.upc.viksadventuresapi.journey.interfaces.rest.resources.CreatePlayerLinkingPairResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.PlayerLinkingPairResource;
+import com.upc.viksadventuresapi.journey.interfaces.rest.resources.SavePlayerLinkingResponseResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,16 +21,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/v1/player-linking-pairs", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Player Linking Pairs", description = "Linking Pair Tracking Endpoints")
 public class PlayerLinkingPairController {
+
     private final PlayerLinkingPairCommandService commandService;
     private final PlayerLinkingPairQueryService queryService;
 
-    @PostMapping
-    public ResponseEntity<PlayerLinkingPairResource> createPlayerLinkingPair(@RequestBody CreatePlayerLinkingPairResource resource) {
-        var command = CreatePlayerLinkingPairCommandFromResourceAssembler.toCommandFromResource(resource);
-        var result = commandService.handle(command);
-        if (result.isEmpty()) return ResponseEntity.badRequest().build();
-        var response = PlayerLinkingPairResourceFromEntityAssembler.toResourceFromEntity(result.get());
-        return ResponseEntity.status(201).body(response);
+    @PostMapping("/save")
+    public ResponseEntity<Void> savePlayerLinkingPair(@RequestBody SavePlayerLinkingResponseResource resource) {
+        var command = SavePlayerLinkingPairCommandFromResourceAssembler.toCommandFromResource(resource);
+        commandService.handle(command);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
