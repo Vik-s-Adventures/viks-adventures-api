@@ -3,7 +3,6 @@ package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Linking;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.LinkingPair;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.LinkingPairRepository;
-import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.LinkingRepository;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerLinkingPair;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerLinkingPairCommand;
@@ -24,36 +23,43 @@ import java.util.List;
 public class PlayerLinkingPairCommandServiceImpl implements PlayerLinkingPairCommandService {
     private final PlayerLinkingPairRepository playerLinkingPairRepository;
     private final PlayerRepository playerRepository;
-    private final LinkingRepository linkingRepository;
     private final LinkingPairRepository linkingPairRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Override
     @Transactional
+    @Override
     public void handle(SavePlayerLinkingResponseCommand command) {
-
         Player player = playerRepository.findById(command.playerId())
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
 
-        Linking linking = linkingRepository.findById(command.linkingId())
-                .orElseThrow(() -> new IllegalArgumentException("Linking not found"));
+        // Get the LinkingPairImage from the first pair
+        if (command.pairs().isEmpty()) {
+            throw new IllegalArgumentException("No pairs provided.");
+        }
 
-        // Delete existing PlayerLinkingPairs for the player and linking
-        List<PlayerLinkingPair> existingPairs = playerLinkingPairRepository.findAllByPlayerIdAndLinkingPairAnswerLinkingId(player.getId(), linking.getId());
+        Long linkingPairImageId = command.pairs().get(0).linkingPairImageId();
+        LinkingPair linkingPairImage = linkingPairRepository.findById(linkingPairImageId)
+                .orElseThrow(() -> new IllegalArgumentException("LinkingPairImage not found"));
+
+        Linking linking = linkingPairImage.getLinking();
+
+        // Verify if the linking exists
+        List<PlayerLinkingPair> existingPairs = playerLinkingPairRepository
+                .findAllByPlayerIdAndLinkingPairAnswerLinkingId(player.getId(), linking.getId());
         playerLinkingPairRepository.deleteAll(existingPairs);
 
-        // Create new PlayerLinkingPairs
+        // Save the new pairs
         List<PlayerLinkingPair> newPairs = command.pairs().stream().map(req -> {
-            LinkingPair linkingPairImage = linkingPairRepository.findById(req.linkingPairImageId())
+            LinkingPair image = linkingPairRepository.findById(req.linkingPairImageId())
                     .orElseThrow(() -> new IllegalArgumentException("LinkingPairImage not found"));
-            LinkingPair linkingPairAnswer = linkingPairRepository.findById(req.linkingPairAnswerId())
+            LinkingPair answer = linkingPairRepository.findById(req.linkingPairAnswerId())
                     .orElseThrow(() -> new IllegalArgumentException("LinkingPairAnswer not found"));
-            return new PlayerLinkingPair(player, linkingPairImage, linkingPairAnswer);
+            return new PlayerLinkingPair(player, image, answer);
         }).toList();
 
         playerLinkingPairRepository.saveAll(newPairs);
 
-        // Publish event for each new PlayerLinkingPair created
+        // Update player progress
         eventPublisher.publishEvent(new PlayerLinkingPairCreatedEvent(this, player, linking));
     }
 

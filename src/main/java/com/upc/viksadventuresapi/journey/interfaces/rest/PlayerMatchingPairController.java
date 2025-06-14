@@ -5,7 +5,7 @@ import com.upc.viksadventuresapi.journey.domain.model.queries.GetPlayerMatchingP
 import com.upc.viksadventuresapi.journey.domain.services.PlayerMatchingPairCommandService;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerMatchingPairQueryService;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.PlayerMatchingPairResource;
-import com.upc.viksadventuresapi.journey.interfaces.rest.resources.SavePlayerMatchingPairResource;
+import com.upc.viksadventuresapi.journey.interfaces.rest.resources.SavePlayerMatchingResponseResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.PlayerMatchingPairResourceFromEntityAssembler;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.SavePlayerMatchingPairCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +24,7 @@ public class PlayerMatchingPairController {
     private final PlayerMatchingPairQueryService queryService;
 
     @PostMapping("/save")
-    public ResponseEntity<Void> savePlayerMatchingPair(@RequestBody SavePlayerMatchingPairResource resource) {
+    public ResponseEntity<Void> savePlayerMatchingPair(@RequestBody SavePlayerMatchingResponseResource resource) {
         var command = SavePlayerMatchingPairCommandFromResourceAssembler.toCommandFromResource(resource);
         commandService.handle(command);
         return ResponseEntity.ok().build();
@@ -34,7 +34,9 @@ public class PlayerMatchingPairController {
     public ResponseEntity<PlayerMatchingPairResource> getByPlayerMatchingPairId(@PathVariable Long id) {
         var query = new GetPlayerMatchingPairByIdQuery(id);
         var result = queryService.handle(query);
-        if (result.isEmpty()) return ResponseEntity.notFound().build();
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         var response = PlayerMatchingPairResourceFromEntityAssembler.toResourceFromEntity(result.get());
         return ResponseEntity.ok(response);
     }
