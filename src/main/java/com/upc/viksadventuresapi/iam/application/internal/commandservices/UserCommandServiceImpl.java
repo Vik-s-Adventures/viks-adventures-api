@@ -103,6 +103,9 @@ public class UserCommandServiceImpl implements UserCommandService {
 
             CreateProfileCommand profileCommand = new CreateProfileCommand(user.getId());
             profileCommandService.handle(profileCommand);
+
+            CreatePlayerCommand createPlayerCommand = new CreatePlayerCommand(user.getId(), 0);
+            playerCommandService.handle(createPlayerCommand);
         }
 
         String jwtToken = jwtService.generateToken(user);
