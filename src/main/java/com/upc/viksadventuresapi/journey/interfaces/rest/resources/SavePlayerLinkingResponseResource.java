@@ -4,6 +4,10 @@ import java.util.List;
 
 public record SavePlayerLinkingResponseResource(
         Long playerId,
-        Long linkingId,
-        List<PlayerLinkingPairResourceRequest> pairs
-) {}
+        List<PlayerLinkingPairResource> pairs
+) {
+    public record PlayerLinkingPairResource(
+            Long linkingPairImageId,
+            Long linkingPairAnswerId
+    ) {}
+}

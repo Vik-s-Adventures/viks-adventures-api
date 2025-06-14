@@ -3,7 +3,6 @@ package com.upc.viksadventuresapi.journey.application.internal.commandservices;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.Matching;
 import com.upc.viksadventuresapi.adventure.domain.model.aggregates.MatchingItem;
 import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.MatchingItemRepository;
-import com.upc.viksadventuresapi.adventure.infrastructure.persistence.jpa.repositories.MatchingRepository;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.Player;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerMatchingPair;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerMatchingPairCommand;
@@ -25,41 +24,47 @@ public class PlayerMatchingPairCommandServiceImpl implements PlayerMatchingPairC
     private final PlayerMatchingPairRepository playerMatchingPairRepository;
     private final PlayerRepository playerRepository;
     private final MatchingItemRepository matchingItemRepository;
-    private final MatchingRepository matchingRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public void handle(SavePlayerMatchingResponseCommand command) {
-
         Player player = playerRepository.findById(command.playerId())
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
 
-        Matching matching = matchingRepository.findById(command.matchingId())
-                .orElseThrow(() -> new IllegalArgumentException("Matching not found"));
+        // Get the MatchingItem from the first pair
+        if (command.pairs().isEmpty()) {
+            throw new IllegalArgumentException("No pairs provided.");
+        }
 
-        // Eliminar respuestas previas para este player + matching
-        List<PlayerMatchingPair> existingPairs =
-                playerMatchingPairRepository.findAllByPlayerIdAndMatchingItemA_MatchingId(player.getId(), matching.getId());
+        Long matchingItemAId = command.pairs().get(0).matchingItemAId();
+        MatchingItem itemA = matchingItemRepository.findById(matchingItemAId)
+                .orElseThrow(() -> new IllegalArgumentException("MatchingItem A not found"));
+
+        Matching matching = itemA.getMatching();
+
+        // Delete existing pairs for the player and matching
+        List<PlayerMatchingPair> existingPairs = playerMatchingPairRepository
+                .findAllByPlayerIdAndMatchingItemA_MatchingId(player.getId(), matching.getId());
         playerMatchingPairRepository.deleteAll(existingPairs);
 
-        // Validar y crear nuevos pares
+        // Save the new pairs
         List<PlayerMatchingPair> newPairs = command.pairs().stream().map(req -> {
-            MatchingItem itemA = matchingItemRepository.findById(req.matchingItemAId())
+            MatchingItem itemAObj = matchingItemRepository.findById(req.matchingItemAId())
                     .orElseThrow(() -> new IllegalArgumentException("MatchingItem A not found"));
             MatchingItem itemB = matchingItemRepository.findById(req.matchingItemBId())
                     .orElseThrow(() -> new IllegalArgumentException("MatchingItem B not found"));
 
-            if (itemA.getId().equals(itemB.getId())) {
+            if (itemAObj.getId().equals(itemB.getId())) {
                 throw new IllegalArgumentException("Items cannot be paired with themselves");
             }
 
-            return new PlayerMatchingPair(player, itemA, itemB);
+            return new PlayerMatchingPair(player, itemAObj, itemB);
         }).toList();
 
         playerMatchingPairRepository.saveAll(newPairs);
 
-        // Publicar evento para recalcular progreso
+        // Publish the event
         eventPublisher.publishEvent(new PlayerMatchingPairCreatedEvent(this, player, matching));
     }
 

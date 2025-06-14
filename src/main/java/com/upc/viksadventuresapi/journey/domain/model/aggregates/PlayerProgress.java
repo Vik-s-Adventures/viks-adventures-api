@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "players_progress")
 public class PlayerProgress extends AuditableAbstractAggregateRoot<PlayerProgress> {
     @ManyToOne
-    @JoinColumn(name = "player_id", nullable = false, unique = true)
+    @JoinColumn(name = "player_id", nullable = false)
     private Player player;
 
     @ManyToOne
