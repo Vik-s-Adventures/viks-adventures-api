@@ -6,8 +6,12 @@ import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgre
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetPlayerProgressByIdQuery;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressCommandService;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressQueryService;
+import com.upc.viksadventuresapi.journey.interfaces.rest.resources.BulkCreatePlayerProgressResource;
 import com.upc.viksadventuresapi.journey.interfaces.rest.resources.PlayerProgressResource;
+import com.upc.viksadventuresapi.journey.interfaces.rest.resources.SyncPlayerProgressResource;
+import com.upc.viksadventuresapi.journey.interfaces.rest.transform.BulkCreatePlayerProgressCommandFromResourceAssembler;
 import com.upc.viksadventuresapi.journey.interfaces.rest.transform.PlayerProgressResourceFromEntityAssembler;
+import com.upc.viksadventuresapi.journey.interfaces.rest.transform.SyncPlayerProgressCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -24,6 +28,28 @@ public class PlayerProgressController {
 
     private final PlayerProgressCommandService commandService;
     private final PlayerProgressQueryService queryService;
+
+    @PostMapping("/bulk-create")
+    public ResponseEntity<List<PlayerProgressResource>> bulkCreatePlayerProgress(
+            @RequestBody BulkCreatePlayerProgressResource resource) {
+        var command = BulkCreatePlayerProgressCommandFromResourceAssembler.toCommandFromResource(resource);
+        var progresses = commandService.handle(command);
+        var resources = progresses.stream()
+                .map(PlayerProgressResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
+
+    @PostMapping("/sync")
+    public ResponseEntity<List<PlayerProgressResource>> syncPlayerProgress(
+            @RequestBody SyncPlayerProgressResource resource) {
+        var command = SyncPlayerProgressCommandFromResourceAssembler.toCommandFromResource(resource);
+        var progresses = commandService.handle(command);
+        var resources = progresses.stream()
+                .map(PlayerProgressResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<PlayerProgressResource> getPlayerProgressById(@PathVariable Long id) {

@@ -8,9 +8,11 @@ import com.upc.viksadventuresapi.journey.domain.services.PlayerCommandService;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressCommandService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,16 +28,17 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
     private final PlayerMatchingPairRepository playerMatchingPairRepository;
     private final PlayerRiddleAnswerRepository playerRiddleAnswerRepository;
 
-    private final ObstacleRepository obstacleRepository;
+    private final WorldRepository worldRepository;
+    private final LevelRepository levelRepository;
+    private final TomeRepository tomeRepository;
+    private final ConceptRepository conceptRepository;
     private final LinkingRepository linkingRepository;
     private final LinkingPairRepository linkingPairRepository;
     private final MatchingRepository matchingRepository;
     private final MatchingPairRepository matchingPairRepository;
     private final RiddleRepository riddleRepository;
     private final RiddleDetailRepository riddleDetailRepository;
-    private final LevelRepository levelRepository;
-    private final ConceptRepository conceptRepository;
-    private final TomeRepository tomeRepository;
+    private final ObstacleRepository obstacleRepository;
 
     private final PlayerCommandService playerCommandService;
 
@@ -47,15 +50,43 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
         Level level = levelRepository.findById(command.levelId())
                 .orElseThrow(() -> new IllegalArgumentException("Level with ID " + command.levelId() + " does not exist."));
 
+        Optional<PlayerProgress> existingProgress = playerProgressRepository.findByPlayerIdAndLevelId(player.getId(), level.getId());
+        if (existingProgress.isPresent()) {
+            return existingProgress;
+        }
+
         PlayerProgress playerProgress = new PlayerProgress(player, level, command);
 
         try {
             playerProgressRepository.save(playerProgress);
+        } catch (DataIntegrityViolationException e) {
+            return playerProgressRepository.findByPlayerIdAndLevelId(player.getId(), level.getId());
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while saving player progress: " + e.getMessage(), e);
         }
 
         return Optional.of(playerProgress);
+    }
+
+    @Override
+    public List<PlayerProgress> handle(BulkCreatePlayerProgressCommand command) {
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + command.playerId() + " does not exist."));
+
+        World world = worldRepository.findById(command.worldId())
+                .orElseThrow(() -> new IllegalArgumentException("World with ID " + command.worldId() + " does not exist."));
+
+        List<Level> levels = levelRepository.findByWorldId(world.getId());
+        return createMissingProgress(player, levels);
+    }
+
+    @Override
+    public List<PlayerProgress> handle(SyncPlayerProgressCommand command) {
+        Player player = playerRepository.findById(command.playerId())
+                .orElseThrow(() -> new IllegalArgumentException("Player with ID " + command.playerId() + " does not exist."));
+
+        List<Level> levels = levelRepository.findAll();
+        return createMissingProgress(player, levels);
     }
 
     @Override
@@ -168,5 +199,20 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
         } catch (Exception e) {
             throw new RuntimeException("Error deleting player progress with ID " + command.playerProgressId() + ": " + e.getMessage());
         }
+    }
+
+    private List<PlayerProgress> createMissingProgress(Player player, List<Level> levels) {
+        List<PlayerProgress> createdProgresses = new ArrayList<>();
+
+        for (Level level : levels) {
+            Optional<PlayerProgress> existingProgress = playerProgressRepository.findByPlayerIdAndLevelId(player.getId(), level.getId());
+            if (existingProgress.isEmpty()) {
+                PlayerProgress newProgress = new PlayerProgress(player, level,
+                        new CreatePlayerProgressCommand(player.getId(), level.getId(), false, 0, LocalDateTime.now()));
+                playerProgressRepository.save(newProgress);
+                createdProgresses.add(newProgress);
+            }
+        }
+        return createdProgresses;
     }
 }
