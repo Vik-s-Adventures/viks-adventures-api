@@ -20,7 +20,12 @@ public class ObstacleCommandServiceImpl implements ObstacleCommandService {
 
     @Override
     public Optional<Obstacle> handle(CreateObstacleCommand command) {
-        Optional<FinalBattle> optionalFinalBattle = finalBattleRepository.findById(command.finalBattleId());
+            System.out.println("INPUT imageUrl: [" + command.imageUrl() + "]");
+            System.out.println("INPUT description: [" + command.description() + "]");
+            System.out.println("INPUT finalBattleId: [" + command.finalBattleId() + "]");
+
+
+            Optional<FinalBattle> optionalFinalBattle = finalBattleRepository.findById(command.finalBattleId());
 
         if (optionalFinalBattle.isEmpty()) {
             throw new IllegalArgumentException("FinalBattle with ID " + command.finalBattleId() + " does not exist.");

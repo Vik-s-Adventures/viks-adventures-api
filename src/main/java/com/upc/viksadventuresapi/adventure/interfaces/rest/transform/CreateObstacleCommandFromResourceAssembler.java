@@ -7,8 +7,8 @@ public class CreateObstacleCommandFromResourceAssembler {
     public static CreateObstacleCommand toCommandFromResource(CreateObstacleResource resource) {
         return new CreateObstacleCommand(
                 resource.finalBattleId(),
-                resource.imageUrl(),
-                resource.description()
+                resource.description(),
+                resource.imageUrl()
         );
     }
 }

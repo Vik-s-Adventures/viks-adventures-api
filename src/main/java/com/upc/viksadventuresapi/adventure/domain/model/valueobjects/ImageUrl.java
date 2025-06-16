@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 
 @Embeddable
 public record ImageUrl(String imageUrl) {
-    // Validate image URL format
-    private static final Pattern URL_PATTERN = Pattern.compile("^(http[s]?://.*)?(?:jpg|jpeg|png|gif)$");
+    private static final Pattern URL_PATTERN =
+            Pattern.compile("^(https?://.*\\.(?:jpg|jpeg|png|gif))$", Pattern.CASE_INSENSITIVE);
 
     public ImageUrl {
         if (imageUrl == null || imageUrl.isBlank()) {
