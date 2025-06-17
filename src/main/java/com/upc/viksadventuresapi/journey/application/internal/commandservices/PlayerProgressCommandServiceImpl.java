@@ -136,10 +136,10 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
         List<Matching> matches = matchingRepository.findByTrialLevelId(level.getId());
         for (Matching matching : matches) {
             List<MatchingPair> matchingPairs = matchingPairRepository.findByMatching(matching);
-            List<PlayerMatchingPair> playerMatchings = playerMatchingPairRepository.findAllByPlayerIdAndMatchingItemA_MatchingId(player.getId(), matching.getId());
+            List<PlayerMatchingPair> playerMatches = playerMatchingPairRepository.findAllByPlayerIdAndMatchingItemA_MatchingId(player.getId(), matching.getId());
 
             boolean allMatchingCorrect = matchingPairs.stream().allMatch(pair ->
-                    playerMatchings.stream().anyMatch(pmp -> {
+                    playerMatches.stream().anyMatch(pmp -> {
                         MatchingItem a = pmp.getMatchingItemA();
                         MatchingItem b = pmp.getMatchingItemB();
                         return a.getMatchingPair() != null &&
