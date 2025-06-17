@@ -13,4 +13,5 @@ public interface PlayerProgressRepository extends JpaRepository<PlayerProgress, 
     List<PlayerProgress> findAllByPlayerId(Long playerId);
     List<PlayerProgress> findAllByLevelId(Long levelId);
     List<PlayerProgress> findAllByPlayerIdAndLevelId(Long playerId, Long levelId);
+    List<PlayerProgress> findAllByPlayerIdAndLevel_WorldId(Long playerId, Long worldId);
 }

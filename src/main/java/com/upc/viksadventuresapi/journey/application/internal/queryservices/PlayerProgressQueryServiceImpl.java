@@ -3,6 +3,7 @@ package com.upc.viksadventuresapi.journey.application.internal.queryservices;
 import com.upc.viksadventuresapi.journey.domain.model.aggregates.PlayerProgress;
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgressesByLevelIdQuery;
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgressesByPlayerIdAndLevelIdQuery;
+import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgressesByPlayerIdAndWorldIdQuery;
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetPlayerProgressByIdQuery;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressQueryService;
 import com.upc.viksadventuresapi.journey.infrastructure.persistence.jpa.repositories.PlayerProgressRepository;
@@ -30,5 +31,10 @@ public class PlayerProgressQueryServiceImpl implements PlayerProgressQueryServic
     @Override
     public List<PlayerProgress> handle(GetAllPlayerProgressesByPlayerIdAndLevelIdQuery query) {
         return playerProgressRepository.findAllByPlayerIdAndLevelId(query.playerId(), query.levelId());
+    }
+
+    @Override
+    public List<PlayerProgress> handle(GetAllPlayerProgressesByPlayerIdAndWorldIdQuery query) {
+        return playerProgressRepository.findAllByPlayerIdAndLevel_WorldId(query.playerId(), query.levelId());
     }
 }

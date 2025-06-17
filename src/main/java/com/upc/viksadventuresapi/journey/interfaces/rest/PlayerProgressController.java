@@ -3,6 +3,7 @@ package com.upc.viksadventuresapi.journey.interfaces.rest;
 import com.upc.viksadventuresapi.journey.domain.model.commands.DeletePlayerProgressCommand;
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgressesByLevelIdQuery;
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgressesByPlayerIdAndLevelIdQuery;
+import com.upc.viksadventuresapi.journey.domain.model.queries.GetAllPlayerProgressesByPlayerIdAndWorldIdQuery;
 import com.upc.viksadventuresapi.journey.domain.model.queries.GetPlayerProgressByIdQuery;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressCommandService;
 import com.upc.viksadventuresapi.journey.domain.services.PlayerProgressQueryService;
@@ -63,6 +64,19 @@ public class PlayerProgressController {
     @GetMapping("/level/{levelId}")
     public ResponseEntity<List<PlayerProgressResource>> getAllByLevelId(@PathVariable Long levelId) {
         var query = new GetAllPlayerProgressesByLevelIdQuery(levelId);
+        var progresses = queryService.handle(query);
+        var resources = progresses.stream()
+                .map(PlayerProgressResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
+
+
+    @GetMapping("/player/{playerId}/world/{worldId}")
+    public ResponseEntity<List<PlayerProgressResource>> getAllByPlayerIdAndWorldId(
+            @PathVariable Long playerId,
+            @PathVariable Long worldId) {
+        var query = new GetAllPlayerProgressesByPlayerIdAndWorldIdQuery(playerId, worldId);
         var progresses = queryService.handle(query);
         var resources = progresses.stream()
                 .map(PlayerProgressResourceFromEntityAssembler::toResourceFromEntity)
