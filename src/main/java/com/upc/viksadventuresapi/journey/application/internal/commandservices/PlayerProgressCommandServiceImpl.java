@@ -111,23 +111,20 @@ public class PlayerProgressCommandServiceImpl implements PlayerProgressCommandSe
         // FinalBattle
         List<Obstacle> obstacles = obstacleRepository.findByFinalBattleLevelId(level.getId());
         List<PlayerFinalBattle> playerBattles = playerFinalBattleRepository.findAllByPlayerIdAndObstacleOptionObstacleFinalBattleLevelId(player.getId(), level.getId());
+        boolean atLeastOneCorrect = playerBattles.stream().anyMatch(pfb -> pfb.getObstacleOption().getIsCorrect());
+        if (!obstacles.isEmpty() && atLeastOneCorrect) totalScore += 20;
 
-        boolean allFinalBattleCorrect = obstacles.stream().allMatch(obstacle ->
-                playerBattles.stream().anyMatch(pfb ->
-                        pfb.getObstacleOption().getObstacle().getId().equals(obstacle.getId()) &&
-                                pfb.getObstacleOption().getIsCorrect()
-                )
-        );
-        if (!obstacles.isEmpty() && allFinalBattleCorrect) totalScore += 20;
+        // boolean allFinalBattleCorrect = obstacles.stream().allMatch(obstacle -> playerBattles.stream().anyMatch(pfb -> pfb.getObstacleOption().getObstacle().getId().equals(obstacle.getId()) && pfb.getObstacleOption().getIsCorrect()));
+        // if (!obstacles.isEmpty() && allFinalBattleCorrect) totalScore += 20;
 
         // Linking
         List<Linking> links = linkingRepository.findByTrialLevelId(level.getId());
         for (Linking linking : links) {
             List<LinkingPair> linkingPairs = linkingPairRepository.findByLinking(linking);
-            List<PlayerLinkingPair> playerLinkings = playerLinkingPairRepository.findAllByPlayerIdAndLinkingPairAnswerLinkingId(player.getId(), linking.getId());
+            List<PlayerLinkingPair> playerLinks = playerLinkingPairRepository.findAllByPlayerIdAndLinkingPairAnswerLinkingId(player.getId(), linking.getId());
 
             boolean allLinkingCorrect = linkingPairs.stream().allMatch(pair ->
-                    playerLinkings.stream().anyMatch(plp ->
+                    playerLinks.stream().anyMatch(plp ->
                             plp.getLinkingPairImage().getId().equals(pair.getId()) &&
                                     plp.getLinkingPairAnswer().getId().equals(pair.getId())
                     )
